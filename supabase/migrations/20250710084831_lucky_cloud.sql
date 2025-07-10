@@ -41,7 +41,7 @@ CREATE TABLE IF NOT EXISTS athletes (
   club text,
   level text,
   created_at timestamptz DEFAULT now(),
-  age NUMERIC
+  age numeric
 );
 
 -- Create judges table
