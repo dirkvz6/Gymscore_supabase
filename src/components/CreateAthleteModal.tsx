@@ -109,10 +109,9 @@ export function CreateAthleteModal({ isOpen, onClose }: CreateAthleteModalProps)
 
           <div>
             <label className="block text-sm font-medium text-gray-700 mb-2">
-              Age (Optional)
+              Age
             </label>
             <div className="relative">
-              <Calendar className="absolute left-3 top-3 h-5 w-5 text-gray-400" />
               <input
                 type="numeric"
                 value={age}
@@ -124,7 +123,7 @@ export function CreateAthleteModal({ isOpen, onClose }: CreateAthleteModalProps)
 
           <div>
             <label className="block text-sm font-medium text-gray-700 mb-2">
-              Club (Optional)
+              Club
             </label>
             <div className="relative">
               <Users className="absolute left-3 top-3 h-5 w-5 text-gray-400" />
@@ -140,7 +139,7 @@ export function CreateAthleteModal({ isOpen, onClose }: CreateAthleteModalProps)
 
           <div>
             <label className="block text-sm font-medium text-gray-700 mb-2">
-              Level (Optional)
+              Level
             </label>
             <input
               type="text"
