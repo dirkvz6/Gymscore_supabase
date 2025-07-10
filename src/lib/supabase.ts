@@ -27,10 +27,10 @@ export interface Athlete {
   first_name: string;
   last_name: string;
   gender: 'male' | 'female';
-  birth_date?: string;
   club?: string;
   level?: string;
   created_at: string;
+  age: numeric;
 }
 
 export interface Judge {

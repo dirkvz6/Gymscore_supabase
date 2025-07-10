@@ -11,9 +11,9 @@ export function CreateAthleteModal({ isOpen, onClose }: CreateAthleteModalProps)
   const [firstName, setFirstName] = useState('');
   const [lastName, setLastName] = useState('');
   const [gender, setGender] = useState<'male' | 'female'>('male');
-  const [birthDate, setBirthDate] = useState('');
   const [club, setClub] = useState('');
   const [level, setLevel] = useState('');
+  const [age, setAge] = useState('');
   const [loading, setLoading] = useState(false);
   const createAthlete = useCreateAthlete();
 
@@ -26,18 +26,18 @@ export function CreateAthleteModal({ isOpen, onClose }: CreateAthleteModalProps)
         first_name: firstName,
         last_name: lastName,
         gender,
-        birth_date: birthDate || undefined,
         club: club || undefined,
         level: level || undefined,
+		age: age || undefined,
       });
 
       onClose();
       setFirstName('');
       setLastName('');
       setGender('male');
-      setBirthDate('');
       setClub('');
       setLevel('');
+	  setAge('');
     } catch (error) {
       console.error('Error creating athlete:', error);
     } finally {
@@ -109,14 +109,14 @@ export function CreateAthleteModal({ isOpen, onClose }: CreateAthleteModalProps)
 
           <div>
             <label className="block text-sm font-medium text-gray-700 mb-2">
-              Birth Date (Optional)
+              Age (Optional)
             </label>
             <div className="relative">
               <Calendar className="absolute left-3 top-3 h-5 w-5 text-gray-400" />
               <input
-                type="date"
-                value={birthDate}
-                onChange={(e) => setBirthDate(e.target.value)}
+                type="numeric"
+                value={age}
+                onChange={(e) => setAge(e.target.value)}
                 className="w-full pl-10 pr-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
               />
             </div>

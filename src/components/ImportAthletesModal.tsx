@@ -12,9 +12,9 @@ interface AthleteCSVRow {
   first_name: string;
   last_name: string;
   gender: 'male' | 'female';
-  birth_date?: string;
   club?: string;
   level?: string;
+  age?: numeric;
 }
 
 export function ImportAthletesModal({ isOpen, onClose }: ImportAthletesModalProps) {
@@ -57,20 +57,12 @@ export function ImportAthletesModal({ isOpen, onClose }: ImportAthletesModalProp
             validationErrors.push(`Row ${rowNumber}: Gender must be 'male' or 'female'`);
           }
 
-          // Validate birth_date format if provided
-          if (row.birth_date && row.birth_date.trim()) {
-            const dateRegex = /^\d{4}-\d{2}-\d{2}$/;
-            if (!dateRegex.test(row.birth_date.trim())) {
-              validationErrors.push(`Row ${rowNumber}: Birth date must be in YYYY-MM-DD format`);
-            }
-          }
-
           if (row.first_name?.trim() && row.last_name?.trim() && ['male', 'female'].includes(row.gender?.toLowerCase())) {
             validData.push({
               first_name: row.first_name.trim(),
               last_name: row.last_name.trim(),
               gender: row.gender.toLowerCase() as 'male' | 'female',
-              birth_date: row.birth_date?.trim() || undefined,
+              age: row.age?.trim() || undefined,
               club: row.club?.trim() || undefined,
               level: row.level?.trim() || undefined,
             });
@@ -113,17 +105,17 @@ export function ImportAthletesModal({ isOpen, onClose }: ImportAthletesModalProp
         first_name: 'John',
         last_name: 'Doe',
         gender: 'male',
-        birth_date: '2005-03-15',
+        age: '5',
         club: 'City Gymnastics',
-        level: 'Level 10'
+        level: 'Level 1'
       },
       {
         first_name: 'Jane',
         last_name: 'Smith',
         gender: 'female',
-        birth_date: '2006-07-22',
-        club: 'Elite Gymnastics',
-        level: 'Level 9'
+        age: '6',
+        club: 'Gymnastics',
+        level: 'Level 1'
       }
     ];
 
@@ -213,9 +205,9 @@ export function ImportAthletesModal({ isOpen, onClose }: ImportAthletesModalProp
                 <li>• <strong>first_name</strong> (required): Athlete's first name</li>
                 <li>• <strong>last_name</strong> (required): Athlete's last name</li>
                 <li>• <strong>gender</strong> (required): 'male' or 'female'</li>
-                <li>• <strong>birth_date</strong> (optional): Date in YYYY-MM-DD format</li>
-                <li>• <strong>club</strong> (optional): Club or team name</li>
-                <li>• <strong>level</strong> (optional): Competition level</li>
+                <li>• <strong>age</strong> (required): Athlete's Age</li>
+                <li>• <strong>club</strong> (required): Club or team name</li>
+                <li>• <strong>level</strong> (required): Competition level</li>
               </ul>
             </div>
 
@@ -249,7 +241,7 @@ export function ImportAthletesModal({ isOpen, onClose }: ImportAthletesModalProp
                         <tr>
                           <th className="px-4 py-2 text-left text-xs font-medium text-gray-500 uppercase">Name</th>
                           <th className="px-4 py-2 text-left text-xs font-medium text-gray-500 uppercase">Gender</th>
-                          <th className="px-4 py-2 text-left text-xs font-medium text-gray-500 uppercase">Birth Date</th>
+                          <th className="px-4 py-2 text-left text-xs font-medium text-gray-500 uppercase">Age</th>
                           <th className="px-4 py-2 text-left text-xs font-medium text-gray-500 uppercase">Club</th>
                           <th className="px-4 py-2 text-left text-xs font-medium text-gray-500 uppercase">Level</th>
                         </tr>
@@ -261,7 +253,7 @@ export function ImportAthletesModal({ isOpen, onClose }: ImportAthletesModalProp
                               {athlete.first_name} {athlete.last_name}
                             </td>
                             <td className="px-4 py-2 text-sm text-gray-900 capitalize">{athlete.gender}</td>
-                            <td className="px-4 py-2 text-sm text-gray-900">{athlete.birth_date || '-'}</td>
+                            <td className="px-4 py-2 text-sm text-gray-900">{athlete.age || '-'}</td>
                             <td className="px-4 py-2 text-sm text-gray-900">{athlete.club || '-'}</td>
                             <td className="px-4 py-2 text-sm text-gray-900">{athlete.level || '-'}</td>
                           </tr>
