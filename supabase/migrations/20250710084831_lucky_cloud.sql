@@ -40,8 +40,8 @@ CREATE TABLE IF NOT EXISTS athletes (
   gender text NOT NULL CHECK (gender IN ('male', 'female')),
   club text,
   level text,
-  created_at timestamptz DEFAULT now(),
-  age numeric
+  age numeric NOT NULL,
+  created_at timestamptz DEFAULT now()  
 );
 
 -- Create judges table
