@@ -14,7 +14,7 @@ export function Leaderboard({ competitionId }: LeaderboardProps) {
   const leaderboardData = useMemo(() => {
     if (!routines || !events) return [];
 
-    // Group routines by athlete and calculate totals
+    // Group routines by athlete, gender, and age group, then calculate totals
     const athleteScores = routines.reduce((acc: any, routine: any) => {
       const athleteId = routine.athlete_id;
       const athleteName = `${routine.athlete?.first_name} ${routine.athlete?.last_name}`;
@@ -24,6 +24,7 @@ export function Leaderboard({ competitionId }: LeaderboardProps) {
           id: athleteId,
           name: athleteName,
           gender: routine.athlete?.gender,
+          age: routine.athlete?.age,
           scores: {},
           totalScore: 0,
           eventCount: 0,
@@ -37,8 +38,32 @@ export function Leaderboard({ competitionId }: LeaderboardProps) {
       return acc;
     }, {});
 
-    // Convert to array and sort by total score
-    return Object.values(athleteScores).sort((a: any, b: any) => b.totalScore - a.totalScore);
+    // Group by gender and age, then sort by total score
+    const groupedData: Record<string, Record<string, any[]>> = {};
+    
+    Object.values(athleteScores).forEach((athlete: any) => {
+      const gender = athlete.gender || 'unknown';
+      const ageGroup = athlete.age || 'No Age Group';
+      
+      if (!groupedData[gender]) {
+        groupedData[gender] = {};
+      }
+      
+      if (!groupedData[gender][ageGroup]) {
+        groupedData[gender][ageGroup] = [];
+      }
+      
+      groupedData[gender][ageGroup].push(athlete);
+    });
+    
+    // Sort athletes within each age group by total score
+    Object.keys(groupedData).forEach(gender => {
+      Object.keys(groupedData[gender]).forEach(ageGroup => {
+        groupedData[gender][ageGroup].sort((a: any, b: any) => b.totalScore - a.totalScore);
+      });
+    });
+    
+    return groupedData;
   }, [routines, events]);
 
   const getRankIcon = (rank: number) => {
@@ -67,7 +92,7 @@ export function Leaderboard({ competitionId }: LeaderboardProps) {
     }
   };
 
-  if (!leaderboardData.length) {
+  if (!Object.keys(leaderboardData).length) {
     return (
       <div className="text-center py-12">
         <Trophy className="mx-auto h-12 w-12 text-gray-400 mb-4" />
@@ -77,13 +102,14 @@ export function Leaderboard({ competitionId }: LeaderboardProps) {
     );
   }
 
-  // Separate leaderboards by gender
-  const maleAthletes = leaderboardData.filter((athlete: any) => athlete.gender === 'male');
-  const femaleAthletes = leaderboardData.filter((athlete: any) => athlete.gender === 'female');
-
-  const renderLeaderboard = (athletes: any[], title: string) => (
+  const renderLeaderboard = (athletes: any[], title: string, ageGroup: string) => (
     <div className="space-y-4">
-      <h3 className="text-lg font-semibold text-gray-900">{title}</h3>
+      <div className="flex items-center justify-between">
+        <h3 className="text-lg font-semibold text-gray-900">{title}</h3>
+        <span className="text-sm text-gray-500 bg-gray-100 px-3 py-1 rounded-full">
+          {ageGroup} • {athletes.length} athletes
+        </span>
+      </div>
       <div className="space-y-3">
         {athletes.map((athlete, index) => (
           <div
@@ -97,7 +123,10 @@ export function Leaderboard({ competitionId }: LeaderboardProps) {
                 </div>
                 <div>
                   <h4 className="font-semibold text-gray-900">{athlete.name}</h4>
-                  <p className="text-sm text-gray-600">{athlete.eventCount} events</p>
+                  <p className="text-sm text-gray-600">
+                    {athlete.eventCount} events
+                    {athlete.age && <span> • {athlete.age}</span>}
+                  </p>
                 </div>
               </div>
               <div className="text-right">
@@ -126,10 +155,60 @@ export function Leaderboard({ competitionId }: LeaderboardProps) {
     </div>
   );
 
+  // Define age group order for consistent display
+  const ageGroupOrder = [
+    '7-9 years',
+    '7-10 years',
+    '7-11 years',
+    '10 years',
+    '11 years',
+    '12 years',
+    '12-13 years',
+    '7-13 years',
+    '13 years',
+    '14+ years',
+    'No Age Group'
+  ];
+
   return (
     <div className="space-y-8">
-      {maleAthletes.length > 0 && renderLeaderboard(maleAthletes, "Men's All-Around")}
-      {femaleAthletes.length > 0 && renderLeaderboard(femaleAthletes, "Women's All-Around")}
+      {/* Female Athletes by Age Group */}
+      {leaderboardData.female && (
+        <div className="space-y-6">
+          <h2 className="text-xl font-bold text-gray-900 border-b border-gray-200 pb-2">
+            Women's Divisions
+          </h2>
+          {ageGroupOrder.map(ageGroup => {
+            const athletes = leaderboardData.female[ageGroup];
+            if (!athletes || athletes.length === 0) return null;
+            
+            return (
+              <div key={`female-${ageGroup}`}>
+                {renderLeaderboard(athletes, "Women's All-Around", ageGroup)}
+              </div>
+            );
+          })}
+        </div>
+      )}
+      
+      {/* Male Athletes by Age Group */}
+      {leaderboardData.male && (
+        <div className="space-y-6">
+          <h2 className="text-xl font-bold text-gray-900 border-b border-gray-200 pb-2">
+            Men's Divisions
+          </h2>
+          {ageGroupOrder.map(ageGroup => {
+            const athletes = leaderboardData.male[ageGroup];
+            if (!athletes || athletes.length === 0) return null;
+            
+            return (
+              <div key={`male-${ageGroup}`}>
+                {renderLeaderboard(athletes, "Men's All-Around", ageGroup)}
+              </div>
+            );
+          })}
+        </div>
+      )}
     </div>
   );
 }

@@ -33,7 +33,37 @@ export function JudgesScoring({ competition, onBack }: JudgesScoringProps) {
 
   // Filter athletes and events by gender
   const filteredAthletes = useMemo(() => {
-    return athletes?.filter(athlete => athlete.gender === activeGender) || [];
+    const genderFiltered = athletes?.filter(athlete => athlete.gender === activeGender) || [];
+    
+    // Group by age groups
+    const ageGroups: Record<string, typeof genderFiltered> = {
+      '7-9 years': [],
+      '7-10 years': [],
+      '7-11 years': [],
+      '7-13 years': [],
+      '10 years': [],
+      '11 years': [],
+      '12 years': [],
+      '13 years': [],
+      '14+ years': [],
+      '12-13 years': [],
+      'No Age Group': []
+    };
+    
+    genderFiltered.forEach(athlete => {
+      if (!athlete.age) {
+        ageGroups['No Age Group'].push(athlete);
+      } else {
+        // Add to the specific age group if it exists
+        if (ageGroups[athlete.age]) {
+          ageGroups[athlete.age].push(athlete);
+        } else {
+          ageGroups['No Age Group'].push(athlete);
+        }
+      }
+    });
+    
+    return ageGroups;
   }, [athletes, activeGender]);
 
   const filteredEvents = useMemo(() => {
@@ -363,84 +393,102 @@ export function JudgesScoring({ competition, onBack }: JudgesScoringProps) {
       </div>
 
       {/* Scoring Grid */}
-      {filteredAthletes.length > 0 && filteredEvents.length > 0 ? (
-        <div className="bg-white rounded-lg shadow-sm border border-gray-200 overflow-hidden">
-          <div className="overflow-x-auto">
-            <table className="min-w-full">
-              <thead className="bg-gray-50">
-                <tr>
-                  <th className="sticky left-0 bg-gray-50 px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider border-r border-gray-200">
-                    Athlete
-                  </th>
-                  {filteredEvents.map((event) => (
-                    <th key={event.id} className="px-3 py-3 text-center border-r border-gray-200">
-                      <div className="text-xs font-medium text-gray-500 uppercase tracking-wider">
-                        {event.name}
-                      </div>
-                      <div className="text-xs text-gray-400 mt-1">
-                        ({event.code})
-                      </div>
-                      <div className="grid grid-cols-5 gap-1 mt-2 text-xs text-gray-400">
-                        <div>D</div>
-                        <div>E</div>
-                        <div>ND</div>
-                        <div>Final</div>
-                        <div>Action</div>
-                      </div>
-                    </th>
-                  ))}
-                </tr>
-              </thead>
-              <tbody className="bg-white divide-y divide-gray-200">
-                {filteredAthletes.map((athlete) => (
-                  <tr key={athlete.id} className="hover:bg-gray-50">
-                    <td className="sticky left-0 bg-white px-4 py-3 border-r border-gray-200">
-                      <div className="font-medium text-gray-900">
-                        {athlete.first_name} {athlete.last_name}
-                      </div>
-                      <div className="text-sm text-gray-500">
-                        {athlete.club && <span>{athlete.club}</span>}
-                        {athlete.level && athlete.club && <span> • </span>}
-                        {athlete.level && <span>{athlete.level}</span>}
-                      </div>
-                    </td>
-                    {filteredEvents.map((event) => (
-                      <td key={event.id} className="px-3 py-3 border-r border-gray-200">
-                        <div className="grid grid-cols-5 gap-1">
-                          <ScoreCell
-                            athleteId={athlete.id}
-                            eventId={event.id}
-                            field="difficultyScore"
-                            placeholder="D"
-                          />
-                          <ScoreCell
-                            athleteId={athlete.id}
-                            eventId={event.id}
-                            field="executionScore"
-                            placeholder="E"
-                          />
-                          <ScoreCell
-                            athleteId={athlete.id}
-                            eventId={event.id}
-                            field="deductions"
-                            placeholder="ND"
-                          />
-                          <FinalScoreCell
-                            athleteId={athlete.id}
-                            eventId={event.id}
-                          />
-                          <ActionCell
-                            athleteId={athlete.id}
-                            eventId={event.id}
-                          />
-                        </div>
-                      </td>
-                    ))}
-                  </tr>
-                ))}
-              </tbody>
-            </table>
-          </div>
+      {Object.keys(filteredAthletes).some(ageGroup => filteredAthletes[ageGroup].length > 0) && filteredEvents.length > 0 ? (
+        <div className="space-y-8">
+          {Object.entries(filteredAthletes).map(([ageGroup, athletes]) => {
+            if (athletes.length === 0) return null;
+            
+            return (
+              <div key={ageGroup} className="space-y-4">
+                <div className="flex items-center justify-between">
+                  <h3 className="text-lg font-semibold text-gray-900">
+                    {ageGroup} ({athletes.length} athletes)
+                  </h3>
+                </div>
+                
+                <div className="bg-white rounded-lg shadow-sm border border-gray-200 overflow-hidden">
+                  <div className="overflow-x-auto">
+                    <table className="min-w-full">
+                      <thead className="bg-gray-50">
+                        <tr>
+                          <th className="sticky left-0 bg-gray-50 px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider border-r border-gray-200">
+                            Athlete
+                          </th>
+                          {filteredEvents.map((event) => (
+                            <th key={event.id} className="px-3 py-3 text-center border-r border-gray-200">
+                              <div className="text-xs font-medium text-gray-500 uppercase tracking-wider">
+                                {event.name}
+                              </div>
+                              <div className="text-xs text-gray-400 mt-1">
+                                ({event.code})
+                              </div>
+                              <div className="grid grid-cols-5 gap-1 mt-2 text-xs text-gray-400">
+                                <div>D</div>
+                                <div>E</div>
+                                <div>ND</div>
+                                <div>Final</div>
+                                <div>Action</div>
+                              </div>
+                            </th>
+                          ))}
+                        </tr>
+                      </thead>
+                      <tbody className="bg-white divide-y divide-gray-200">
+                        {athletes.map((athlete) => (
+                          <tr key={athlete.id} className="hover:bg-gray-50">
+                            <td className="sticky left-0 bg-white px-4 py-3 border-r border-gray-200">
+                              <div className="font-medium text-gray-900">
+                                {athlete.first_name} {athlete.last_name}
+                              </div>
+                              <div className="text-sm text-gray-500">
+                                {athlete.age && <span>Age {athlete.age}</span>}
+                                {athlete.club && athlete.age && <span> • </span>}
+                                {athlete.club && <span>{athlete.club}</span>}
+                                {athlete.level && (athlete.club || athlete.age) && <span> • </span>}
+                                {athlete.level && <span>{athlete.level}</span>}
+                              </div>
+                            </td>
+                            {filteredEvents.map((event) => (
+                              <td key={event.id} className="px-3 py-3 border-r border-gray-200">
+                                <div className="grid grid-cols-5 gap-1">
+                                  <ScoreCell
+                                    athleteId={athlete.id}
+                                    eventId={event.id}
+                                    field="difficultyScore"
+                                    placeholder="D"
+                                  />
+                                  <ScoreCell
+                                    athleteId={athlete.id}
+                                    eventId={event.id}
+                                    field="executionScore"
+                                    placeholder="E"
+                                  />
+                                  <ScoreCell
+                                    athleteId={athlete.id}
+                                    eventId={event.id}
+                                    field="deductions"
+                                    placeholder="ND"
+                                  />
+                                  <FinalScoreCell
+                                    athleteId={athlete.id}
+                                    eventId={event.id}
+                                  />
+                                  <ActionCell
+                                    athleteId={athlete.id}
+                                    eventId={event.id}
+                                  />
+                                </div>
+                              </td>
+                            ))}
+                          </tr>
+                        ))}
+                      </tbody>
+                    </table>
+                  </div>
+                </div>
+              </div>
+            );
+          })}
         </div>
       ) : (
         <div className="text-center py-12">

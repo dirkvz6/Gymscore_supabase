@@ -12,9 +12,9 @@ interface AthleteCSVRow {
   first_name: string;
   last_name: string;
   gender: 'male' | 'female';
+  age?: string;
   club?: string;
   level?: string;
-  age?: numeric;
 }
 
 export function ImportAthletesModal({ isOpen, onClose }: ImportAthletesModalProps) {
@@ -25,6 +25,18 @@ export function ImportAthletesModal({ isOpen, onClose }: ImportAthletesModalProp
   const [importResults, setImportResults] = useState<{ success: number; failed: number } | null>(null);
   const createAthlete = useCreateAthlete();
 
+  const validAgeGroups = [
+    '7-9 years',
+    '7-10 years',
+    '7-11 years',
+    '7-13 years',
+    '10 years',
+    '11 years',
+    '12 years',
+    '13 years',
+    '14+ years',
+    '12-13 years'
+  ];
   const handleFileChange = (event: React.ChangeEvent<HTMLInputElement>) => {
     const selectedFile = event.target.files?.[0];
     if (selectedFile && selectedFile.type === 'text/csv') {
@@ -55,6 +67,13 @@ export function ImportAthletesModal({ isOpen, onClose }: ImportAthletesModalProp
           }
           if (!row.gender?.trim() || !['male', 'female'].includes(row.gender.toLowerCase())) {
             validationErrors.push(`Row ${rowNumber}: Gender must be 'male' or 'female'`);
+          }
+
+          // Validate age format if provided
+          if (row.age && row.age.trim()) {
+            if (!validAgeGroups.includes(row.age.trim())) {
+              validationErrors.push(`Row ${rowNumber}: Age must be one of: ${validAgeGroups.join(', ')}`);
+            }
           }
 
           if (row.first_name?.trim() && row.last_name?.trim() && ['male', 'female'].includes(row.gender?.toLowerCase())) {
@@ -105,17 +124,17 @@ export function ImportAthletesModal({ isOpen, onClose }: ImportAthletesModalProp
         first_name: 'John',
         last_name: 'Doe',
         gender: 'male',
-        age: '5',
+        age: '14+ years',
         club: 'City Gymnastics',
-        level: 'Level 1'
+        level: 'Level 10'
       },
       {
         first_name: 'Jane',
         last_name: 'Smith',
         gender: 'female',
-        age: '6',
-        club: 'Gymnastics',
-        level: 'Level 1'
+        age: '12 years',
+        club: 'Elite Gymnastics',
+        level: 'Level 9'
       }
     ];
 
@@ -205,10 +224,16 @@ export function ImportAthletesModal({ isOpen, onClose }: ImportAthletesModalProp
                 <li>• <strong>first_name</strong> (required): Athlete's first name</li>
                 <li>• <strong>last_name</strong> (required): Athlete's last name</li>
                 <li>• <strong>gender</strong> (required): 'male' or 'female'</li>
-                <li>• <strong>age</strong> (required): Athlete's Age</li>
-                <li>• <strong>club</strong> (required): Club or team name</li>
-                <li>• <strong>level</strong> (required): Competition level</li>
+                <li>• <strong>age</strong> (optional): Age group (e.g., '12 years', '7-9 years', '14+ years')</li>
+                <li>• <strong>club</strong> (optional): Club or team name</li>
+                <li>• <strong>level</strong> (optional): Competition level</li>
               </ul>
+              <div className="mt-3">
+                <p className="text-sm font-medium text-gray-700 mb-1">Valid age groups:</p>
+                <p className="text-xs text-gray-600">
+                  {validAgeGroups.join(', ')}
+                </p>
+              </div>
             </div>
 
             {/* Errors */}

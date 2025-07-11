@@ -6,12 +6,13 @@ import { CompetitionCard } from './components/CompetitionCard';
 import { CreateCompetitionModal } from './components/CreateCompetitionModal';
 import { CreateAthleteModal } from './components/CreateAthleteModal';
 import { ImportAthletesModal } from './components/ImportAthletesModal';
+import { AthleteManagement } from './components/AthleteManagement';
 import { CompetitionDetail } from './components/CompetitionDetail';
 import { useAuth } from './hooks/useAuth';
 import { useCompetitions } from './hooks/useCompetitions';
 import { useAthletes } from './hooks/useAthletes';
 import { Competition } from './lib/supabase';
-import { Plus, Users, Trophy, Calendar, Upload } from 'lucide-react';
+import { Plus, Users, Trophy, Calendar, Upload, Settings } from 'lucide-react';
 
 const queryClient = new QueryClient();
 
@@ -21,6 +22,7 @@ function AppContent() {
   const [showCreateAthlete, setShowCreateAthlete] = useState(false);
   const [showImportAthletes, setShowImportAthletes] = useState(false);
   const [selectedCompetition, setSelectedCompetition] = useState<Competition | null>(null);
+  const [showAthleteManagement, setShowAthleteManagement] = useState(false);
   const { user } = useAuth();
   const { data: competitions } = useCompetitions();
   const { data: athletes } = useAthletes();
@@ -38,6 +40,14 @@ function AppContent() {
     );
   }
 
+  if (showAthleteManagement) {
+    return (
+      <AthleteManagement
+        onBack={() => setShowAthleteManagement(false)}
+        onCreateAthlete={() => setShowCreateAthlete(true)}
+      />
+    );
+  }
   return (
     <div className="min-h-screen bg-gray-50">
       <Header onAuthClick={() => setShowAuth(true)} />
@@ -108,6 +118,13 @@ function AppContent() {
             >
               <Upload size={18} />
               <span>Import Athletes</span>
+            </button>
+            <button
+              onClick={() => setShowAthleteManagement(true)}
+              className="flex items-center space-x-2 bg-gray-600 text-white px-4 py-2 rounded-lg hover:bg-gray-700 transition-colors"
+            >
+              <Settings size={18} />
+              <span>Manage Athletes</span>
             </button>
           </div>
         )}
