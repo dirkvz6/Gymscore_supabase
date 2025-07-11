@@ -58,7 +58,7 @@ function AppContent() {
             Gymnastics Competition Manager
           </h1>
           <p className="text-gray-600">
-            Professional scoring system for gymnastics competitions
+            Scoring system for gymnastics competitions
           </p>
         </div>
 
