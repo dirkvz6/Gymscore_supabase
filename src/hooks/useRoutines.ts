@@ -9,8 +9,8 @@ export function useRoutines(competitionId?: string) {
         .from('routines')
         .select(`
           *,
-          athlete:athletes(*),
-          event:events(*)
+          athletes!inner(*),
+          events!inner(*)
         `)
         .order('performed_at', { ascending: false });
       
@@ -21,6 +21,8 @@ export function useRoutines(competitionId?: string) {
       const { data, error } = await query;
       
       if (error) throw error;
+      
+      console.log('Fetched routines with relations:', data);
       return data;
     },
     enabled: true,
