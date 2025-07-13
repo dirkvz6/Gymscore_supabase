@@ -11,50 +11,41 @@ export function Leaderboard({ competitionId }: LeaderboardProps) {
   const { data: routines } = useRoutines(competitionId);
   const { data: events } = useEvents();
 
-  const leaderboardData = useMemo(() => {
-    if (!routines || !events) return [];
+  // Debug logging
+  useEffect(() => {
+    console.log('Leaderboard - Competition ID:', competitionId);
+    console.log('Leaderboard - Routines:', routines);
+    console.log('Leaderboard - Events:', events);
+  }, [competitionId, routines, events]);
 
-    console.log('Raw routines data:', routines);
-    console.log('Events data:', events);
+  const leaderboardData = useMemo(() => {
+    console.log('Computing leaderboard data...');
+    if (!routines || !events) return [];
 
     // Group routines by athlete, gender, level, and age group, then calculate totals
     const athleteScores = routines.reduce((acc: any, routine: any) => {
       const athleteId = routine.athlete_id;
-      const athlete = routine.athletes; // Updated to match the correct relation name
-      const event = routine.events; // Updated to match the correct relation name
-      const athleteName = `${athlete?.first_name} ${athlete?.last_name}`;
-      
-      console.log('Processing routine:', {
-        athleteId,
-        athleteName,
-        athlete,
-        event,
-        finalScore: routine.final_score
-      });
+      const athleteName = `${routine.athlete?.first_name} ${routine.athlete?.last_name}`;
       
       if (!acc[athleteId]) {
         acc[athleteId] = {
           id: athleteId,
           name: athleteName,
-          gender: athlete?.gender,
-          age: athlete?.age,
-          level: athlete?.level,
+          gender: routine.athlete?.gender,
+          age: routine.athlete?.age,
+          level: routine.athlete?.level,
           scores: {},
           totalScore: 0,
           eventCount: 0,
         };
       }
 
-      if (event?.code) {
-        acc[athleteId].scores[event.code] = routine.final_score;
-      }
+      acc[athleteId].scores[routine.event?.code] = routine.final_score;
       acc[athleteId].totalScore += routine.final_score;
       acc[athleteId].eventCount += 1;
 
       return acc;
     }, {});
-
-    console.log('Athlete scores:', athleteScores);
 
     // Group by gender, level, and age, then sort by total score
     const groupedData: Record<string, Record<string, Record<string, any[]>>> = {};
@@ -88,13 +79,12 @@ export function Leaderboard({ competitionId }: LeaderboardProps) {
       });
     });
     
-    console.log('Final grouped data:', groupedData);
     return groupedData;
   }, [routines, events]);
 
-  // Debug effect to log data
+  // Debug the computed data
   useEffect(() => {
-    console.log('Leaderboard data updated:', leaderboardData);
+    console.log('Leaderboard data computed:', leaderboardData);
   }, [leaderboardData]);
 
   const getRankIcon = (rank: number) => {
@@ -127,18 +117,8 @@ export function Leaderboard({ competitionId }: LeaderboardProps) {
     return (
       <div className="text-center py-12">
         <Trophy className="mx-auto h-12 w-12 text-gray-400 mb-4" />
-        <h3 className="text-lg font-medium text-gray-900 mb-2">No results available</h3>
-        <p className="text-gray-500">
-          {routines?.length ? 
-            `Found ${routines.length} routines but no valid athlete data. Check that athletes and events are properly linked.` :
-            'Scores will appear here as routines are completed.'
-          }
-        </p>
-        {routines?.length > 0 && (
-          <div className="mt-4 text-sm text-gray-400">
-            <p>Debug info: {routines.length} routines, {events?.length || 0} events</p>
-          </div>
-        )}
+        <h3 className="text-lg font-medium text-gray-900 mb-2">No results yet</h3>
+        <p className="text-gray-500">Scores will appear here as routines are completed.</p>
       </div>
     );
   }

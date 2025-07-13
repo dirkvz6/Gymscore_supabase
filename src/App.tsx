@@ -7,7 +7,7 @@ import { CreateCompetitionModal } from './components/CreateCompetitionModal';
 import { CreateAthleteModal } from './components/CreateAthleteModal';
 import { ImportAthletesModal } from './components/ImportAthletesModal';
 import { AthleteManagement } from './components/AthleteManagement';
-import { CompetitionDetail } from './components/CompetitionDetail';
+import CompetitionDetail from './components/CompetitionDetail';
 import { useAuth } from './hooks/useAuth';
 import { useCompetitions } from './hooks/useCompetitions';
 import { useAthletes } from './hooks/useAthletes';
