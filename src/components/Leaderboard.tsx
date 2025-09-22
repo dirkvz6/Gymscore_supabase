@@ -192,7 +192,7 @@ export function Leaderboard({ competitionId }: LeaderboardProps) {
     'Level 10',
     'Elite',
 	'Bronz',
-	'Silwer',
+	'Silver',
 	'Gold',
     'No Level'
   ];
