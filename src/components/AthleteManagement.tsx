@@ -30,10 +30,10 @@ export function AthleteManagement({ onBack, onCreateAthlete }: AthleteManagement
     '12 years',
     '13 years',
     '14+ years',
-    '12-13 years'
-	'7-8 years',
-	'9-10 years',
-	'10-11 years',
+    '12-13 years',
+    '7-8 years',
+    '9-10 years',
+    '10-11 years'
   ];
 
   // Filter athletes based on search and gender
