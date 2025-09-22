@@ -102,7 +102,7 @@ export function JudgesScoring({ competition, onBack }: JudgesScoringProps) {
 
   const getGroupDisplayName = (groupKey: string) => {
     if (groupBy === 'age') {
-      return groupKey === 'No Age Group' ? 'No Age Group' : `Age ${groupKey}`;
+      return groupKey === 'No Age Group' ? 'No Age Group' : `Age Group ${groupKey}`;
     } else {
       return groupKey === 'No Level' ? 'No Level' : groupKey;
     }
@@ -450,7 +450,7 @@ export function JudgesScoring({ competition, onBack }: JudgesScoringProps) {
                     : 'text-gray-600 hover:text-gray-800 hover:bg-gray-100'
                 }`}
               >
-                Age
+                Age Group
               </button>
               <button
                 onClick={() => setGroupBy('level')}
@@ -516,7 +516,7 @@ export function JudgesScoring({ competition, onBack }: JudgesScoringProps) {
                                 {athlete.first_name} {athlete.last_name}
                               </div>
                               <div className="text-sm text-gray-500">
-                                {groupBy === 'level' && athlete.age && <span>Age {athlete.age}</span>}
+                                {groupBy === 'level' && athlete.age && <span>Age Group {athlete.age}</span>}
                                 {groupBy === 'age' && athlete.level && <span>{athlete.level}</span>}
                                 {athlete.club && athlete.age && <span> • </span>}
                                 {groupBy === 'level' && athlete.club && athlete.level && <span> • </span>}
