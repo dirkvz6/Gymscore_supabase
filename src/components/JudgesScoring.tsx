@@ -80,6 +80,9 @@ export function JudgesScoring({ competition, onBack }: JudgesScoringProps) {
         'Level 9': [],
         'Level 10': [],
         'Elite': [],
+		'Bronz': [],
+	    'Silwer': [],
+		'Gold': [],
         'No Level': []
       };
       
