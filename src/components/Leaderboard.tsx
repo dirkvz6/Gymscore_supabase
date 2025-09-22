@@ -201,6 +201,7 @@ export function Leaderboard({ competitionId }: LeaderboardProps) {
     '7-9 years',
     '7-10 years',
     '7-11 years',
+	'9 years',
     '10 years',
     '11 years',
     '12 years',
@@ -208,6 +209,9 @@ export function Leaderboard({ competitionId }: LeaderboardProps) {
     '7-13 years',
     '13 years',
     '14+ years',
+	'7-8 years',
+	'9-10 years',
+	'10-11 years',
     'No Age Group'
   ];
 
