@@ -30,12 +30,16 @@ export function ImportAthletesModal({ isOpen, onClose }: ImportAthletesModalProp
     '7-10 years',
     '7-11 years',
     '7-13 years',
+	'9 years',
     '10 years',
     '11 years',
     '12 years',
     '13 years',
     '14+ years',
     '12-13 years'
+	'7-8 years',
+	'9-10 years',
+	'10-11 years',
   ];
   const handleFileChange = (event: React.ChangeEvent<HTMLInputElement>) => {
     const selectedFile = event.target.files?.[0];
