@@ -6,6 +6,7 @@ import { CompetitionCard } from './components/CompetitionCard';
 import { CreateCompetitionModal } from './components/CreateCompetitionModal';
 import { CreateAthleteModal } from './components/CreateAthleteModal';
 import { ImportAthletesModal } from './components/ImportAthletesModal';
+import { ManageCompetitionModal } from './components/ManageCompetitionModal';
 import { AthleteManagement } from './components/AthleteManagement';
 import CompetitionDetail from './components/CompetitionDetail';
 import { useAuth } from './hooks/useAuth';
@@ -22,13 +23,14 @@ function AppContent() {
   const [showCreateAthlete, setShowCreateAthlete] = useState(false);
   const [showImportAthletes, setShowImportAthletes] = useState(false);
   const [selectedCompetition, setSelectedCompetition] = useState<Competition | null>(null);
+  const [managingCompetition, setManagingCompetition] = useState<Competition | null>(null);
   const [showAthleteManagement, setShowAthleteManagement] = useState(false);
   const { user } = useAuth();
   const { data: competitions } = useCompetitions();
   const { data: athletes } = useAthletes();
 
   const upcomingCompetitions = competitions?.filter(c => c.status === 'upcoming') || [];
-  const activeCompetitions = competitions?.filter(c => c.status === 'active') || [];
+  const activeCompetitions = competitions?.filter(c => c.status === 'ongoing') || [];
   const completedCompetitions = competitions?.filter(c => c.status === 'completed') || [];
 
   if (selectedCompetition) {
@@ -141,6 +143,7 @@ function AppContent() {
                     key={competition.id}
                     competition={competition}
                     onClick={() => setSelectedCompetition(competition)}
+                    onManage={user?.id === competition.user_id ? () => setManagingCompetition(competition) : undefined}
                   />
                 ))}
               </div>
@@ -157,6 +160,7 @@ function AppContent() {
                     key={competition.id}
                     competition={competition}
                     onClick={() => setSelectedCompetition(competition)}
+                    onManage={user?.id === competition.user_id ? () => setManagingCompetition(competition) : undefined}
                   />
                 ))}
               </div>
@@ -173,6 +177,7 @@ function AppContent() {
                     key={competition.id}
                     competition={competition}
                     onClick={() => setSelectedCompetition(competition)}
+                    onManage={user?.id === competition.user_id ? () => setManagingCompetition(competition) : undefined}
                   />
                 ))}
               </div>
@@ -214,6 +219,13 @@ function AppContent() {
         isOpen={showImportAthletes}
         onClose={() => setShowImportAthletes(false)}
       />
+      {managingCompetition && (
+        <ManageCompetitionModal
+          isOpen={!!managingCompetition}
+          onClose={() => setManagingCompetition(null)}
+          competition={managingCompetition}
+        />
+      )}
     </div>
   );
 }

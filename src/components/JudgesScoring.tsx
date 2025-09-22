@@ -21,6 +21,7 @@ interface ScoreEntry {
 
 export function JudgesScoring({ competition, onBack }: JudgesScoringProps) {
   const [activeGender, setActiveGender] = useState<'male' | 'female'>('female');
+  const [groupBy, setGroupBy] = useState<'age' | 'level'>('age');
   const [editingCell, setEditingCell] = useState<string | null>(null);
   const [scores, setScores] = useState<Record<string, ScoreEntry>>({});
   const [saving, setSaving] = useState<string | null>(null);
@@ -35,37 +36,82 @@ export function JudgesScoring({ competition, onBack }: JudgesScoringProps) {
   const filteredAthletes = useMemo(() => {
     const genderFiltered = athletes?.filter(athlete => athlete.gender === activeGender) || [];
     
-    // Group by age groups
-    const ageGroups: Record<string, typeof genderFiltered> = {
-      '7-9 years': [],
-      '7-10 years': [],
-      '7-11 years': [],
-      '7-13 years': [],
-      '10 years': [],
-      '11 years': [],
-      '12 years': [],
-      '13 years': [],
-      '14+ years': [],
-      '12-13 years': [],
-      'No Age Group': []
-    };
-    
-    genderFiltered.forEach(athlete => {
-      if (!athlete.age) {
-        ageGroups['No Age Group'].push(athlete);
-      } else {
-        // Add to the specific age group if it exists
-        if (ageGroups[athlete.age]) {
-          ageGroups[athlete.age].push(athlete);
-        } else {
+    if (groupBy === 'age') {
+      // Group by age groups
+      const ageGroups: Record<string, typeof genderFiltered> = {
+        '7-9 years': [],
+        '7-10 years': [],
+        '7-11 years': [],
+        '7-13 years': [],
+        '10 years': [],
+        '11 years': [],
+        '12 years': [],
+        '13 years': [],
+        '14+ years': [],
+        '12-13 years': [],
+        'No Age Group': []
+      };
+      
+      genderFiltered.forEach(athlete => {
+        if (!athlete.age) {
           ageGroups['No Age Group'].push(athlete);
+        } else {
+          // Add to the specific age group if it exists
+          if (ageGroups[athlete.age]) {
+            ageGroups[athlete.age].push(athlete);
+          } else {
+            ageGroups['No Age Group'].push(athlete);
+          }
         }
-      }
-    });
-    
-    return ageGroups;
-  }, [athletes, activeGender]);
+      });
+      
+      return ageGroups;
+    } else {
+      // Group by level
+      const levelGroups: Record<string, typeof genderFiltered> = {
+        'Level 1': [],
+        'Level 2': [],
+        'Level 3': [],
+        'Level 4': [],
+        'Level 5': [],
+        'Level 6': [],
+        'Level 7': [],
+        'Level 8': [],
+        'Level 9': [],
+        'Level 10': [],
+        'Elite': [],
+        'No Level': []
+      };
+      
+      genderFiltered.forEach(athlete => {
+        if (!athlete.level) {
+          levelGroups['No Level'].push(athlete);
+        } else {
+          // Add to the specific level if it exists
+          if (levelGroups[athlete.level]) {
+            levelGroups[athlete.level].push(athlete);
+          } else {
+            levelGroups['No Level'].push(athlete);
+          }
+        }
+      });
+      
+      return levelGroups;
+    }
+  }, [athletes, activeGender, groupBy]);
 
+  const getGroupDisplayName = (groupKey: string) => {
+    if (groupBy === 'age') {
+      return groupKey === 'No Age Group' ? 'No Age Group' : `Age ${groupKey}`;
+    } else {
+      return groupKey === 'No Level' ? 'No Level' : groupKey;
+    }
+  };
+
+  const getGroupCount = (groupKey: string) => {
+    return filteredAthletes[groupKey]?.length || 0;
+  };
+    
   const filteredEvents = useMemo(() => {
     return events?.filter(event => event.gender === activeGender)
       .sort((a, b) => a.display_order - b.display_order) || [];
@@ -371,7 +417,8 @@ export function JudgesScoring({ competition, onBack }: JudgesScoringProps) {
 
       {/* Gender Tabs */}
       <div className="border-b border-gray-200">
-        <nav className="flex space-x-8">
+        <nav className="flex items-center justify-between">
+          <div className="flex space-x-8">
           {(['female', 'male'] as const).map((gender) => (
             <button
               key={gender}
@@ -389,20 +436,48 @@ export function JudgesScoring({ competition, onBack }: JudgesScoringProps) {
               </span>
             </button>
           ))}
+          </div>
+          
+          {/* Grouping Options */}
+          <div className="flex items-center space-x-4">
+            <span className="text-sm font-medium text-gray-700">Group by:</span>
+            <div className="flex space-x-2">
+              <button
+                onClick={() => setGroupBy('age')}
+                className={`px-3 py-1 text-sm rounded-md transition-colors ${
+                  groupBy === 'age' 
+                    ? 'bg-blue-100 text-blue-700 font-medium' 
+                    : 'text-gray-600 hover:text-gray-800 hover:bg-gray-100'
+                }`}
+              >
+                Age
+              </button>
+              <button
+                onClick={() => setGroupBy('level')}
+                className={`px-3 py-1 text-sm rounded-md transition-colors ${
+                  groupBy === 'level' 
+                    ? 'bg-blue-100 text-blue-700 font-medium' 
+                    : 'text-gray-600 hover:text-gray-800 hover:bg-gray-100'
+                }`}
+              >
+                Level
+              </button>
+            </div>
+          </div>
         </nav>
       </div>
 
       {/* Scoring Grid */}
       {Object.keys(filteredAthletes).some(ageGroup => filteredAthletes[ageGroup].length > 0) && filteredEvents.length > 0 ? (
         <div className="space-y-8">
-          {Object.entries(filteredAthletes).map(([ageGroup, athletes]) => {
+          {Object.entries(filteredAthletes).map(([groupKey, athletes]) => {
             if (athletes.length === 0) return null;
             
             return (
-              <div key={ageGroup} className="space-y-4">
+              <div key={groupKey} className="space-y-4">
                 <div className="flex items-center justify-between">
                   <h3 className="text-lg font-semibold text-gray-900">
-                    {ageGroup} ({athletes.length} athletes)
+                    {getGroupDisplayName(groupKey)} ({athletes.length} athletes)
                   </h3>
                 </div>
                 
@@ -441,11 +516,12 @@ export function JudgesScoring({ competition, onBack }: JudgesScoringProps) {
                                 {athlete.first_name} {athlete.last_name}
                               </div>
                               <div className="text-sm text-gray-500">
-                                {athlete.age && <span>Age {athlete.age}</span>}
+                                {groupBy === 'level' && athlete.age && <span>Age {athlete.age}</span>}
+                                {groupBy === 'age' && athlete.level && <span>{athlete.level}</span>}
                                 {athlete.club && athlete.age && <span> • </span>}
+                                {groupBy === 'level' && athlete.club && athlete.level && <span> • </span>}
                                 {athlete.club && <span>{athlete.club}</span>}
-                                {athlete.level && (athlete.club || athlete.age) && <span> • </span>}
-                                {athlete.level && <span>{athlete.level}</span>}
+                                {groupBy === 'age' && athlete.level && (athlete.club || athlete.age) && <span> • </span>}
                               </div>
                             </td>
                             {filteredEvents.map((event) => (

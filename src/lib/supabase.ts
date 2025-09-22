@@ -16,7 +16,7 @@ export interface Competition {
   location?: string;
   start_date: string;
   end_date?: string;
-  status: 'upcoming' | 'ongoing' | 'completed';
+  status: 'upcoming' | 'ongoing' | 'completed' | 'cancelled';
   user_id?: string;
   created_at: string;
 }

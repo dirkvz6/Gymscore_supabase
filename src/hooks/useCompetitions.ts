@@ -16,6 +16,44 @@ export function useCompetitions() {
   });
 }
 
+export function useUpdateCompetition() {
+  const queryClient = useQueryClient();
+  
+  return useMutation({
+    mutationFn: async ({ id, ...updates }: Partial<Competition> & { id: string }) => {
+      const { data, error } = await supabase
+        .from('competitions')
+        .update(updates)
+        .eq('id', id)
+        .select()
+        .single();
+      
+      if (error) throw error;
+      return data;
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['competitions'] });
+    },
+  });
+}
+
+export function useDeleteCompetition() {
+  const queryClient = useQueryClient();
+  
+  return useMutation({
+    mutationFn: async (competitionId: string) => {
+      const { error } = await supabase
+        .from('competitions')
+        .delete()
+        .eq('id', competitionId);
+      
+      if (error) throw error;
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['competitions'] });
+    },
+  });
+}
 export function useCreateCompetition() {
   const queryClient = useQueryClient();
   
