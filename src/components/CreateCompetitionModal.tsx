@@ -12,12 +12,12 @@ export function CreateCompetitionModal({ isOpen, onClose }: CreateCompetitionMod
   const [location, setLocation] = useState('');
   const [startDate, setStartDate] = useState('');
   const [endDate, setEndDate] = useState('');
-  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState('');
   const createCompetition = useCreateCompetition();
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    setLoading(true);
+    setError('');
 
     try {
       await createCompetition.mutateAsync({
@@ -34,9 +34,8 @@ export function CreateCompetitionModal({ isOpen, onClose }: CreateCompetitionMod
       setStartDate('');
       setEndDate('');
     } catch (error) {
-      console.error('Error creating competition:', error);
-    } finally {
-      setLoading(false);
+      const message = error instanceof Error ? error.message : 'Failed to create competition';
+      setError(message);
     }
   };
 
@@ -56,6 +55,11 @@ export function CreateCompetitionModal({ isOpen, onClose }: CreateCompetitionMod
         </div>
 
         <form onSubmit={handleSubmit} className="space-y-4">
+          {error && (
+            <div className="bg-red-50 border border-red-200 text-red-700 px-4 py-3 rounded-lg text-sm">
+              {error}
+            </div>
+          )}
           <div>
             <label className="block text-sm font-medium text-gray-700 mb-2">
               Competition Name
@@ -123,10 +127,10 @@ export function CreateCompetitionModal({ isOpen, onClose }: CreateCompetitionMod
 
           <button
             type="submit"
-            disabled={loading}
+            disabled={createCompetition.isPending}
             className="w-full bg-blue-600 text-white py-2 px-4 rounded-lg hover:bg-blue-700 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
           >
-            {loading ? 'Creating...' : 'Create Competition'}
+            {createCompetition.isPending ? 'Creating...' : 'Create Competition'}
           </button>
         </form>
       </div>
