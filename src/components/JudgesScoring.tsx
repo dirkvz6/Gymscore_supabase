@@ -1,5 +1,5 @@
 import { useState, useMemo } from 'react';
-import { ArrowLeft, Users, Trophy, Save, Edit3, Check, X } from 'lucide-react';
+import { ArrowLeft, Users, Trophy, Save, CreditCard as Edit3, Check, X } from 'lucide-react';
 import { Competition } from '../lib/supabase';
 import { useAthletes } from '../hooks/useAthletes';
 import { useEvents } from '../hooks/useEvents';
@@ -35,27 +35,30 @@ export function JudgesScoring({ competition, onBack }: JudgesScoringProps) {
   // Filter athletes and events by gender
   const filteredAthletes = useMemo(() => {
     const genderFiltered = athletes?.filter(athlete => athlete.gender === activeGender) || [];
-    
+
     if (groupBy === 'age') {
       // Group by age groups
       const ageGroups: Record<string, typeof genderFiltered> = {
+        '7-8 years': [],
         '7-9 years': [],
         '7-10 years': [],
         '7-11 years': [],
         '7-13 years': [],
         '9 years': [],
-		'10 years': [],
+        '9-10 years': [],
+        '9-11 years': [],
+        '10 years': [],
+        '10-11 years': [],
         '11 years': [],
+        '11-12 years': [],
         '12 years': [],
+        '12-13 years': [],
+        '12-14 years': [],
         '13 years': [],
         '14+ years': [],
-        '12-13 years': [],
-		'7-8 years': [],
-		'9-10 years': [],
-		'10-11 years': [],
         'No Age Group': []
       };
-      
+
       genderFiltered.forEach(athlete => {
         if (!athlete.age) {
           ageGroups['No Age Group'].push(athlete);
@@ -68,42 +71,83 @@ export function JudgesScoring({ competition, onBack }: JudgesScoringProps) {
           }
         }
       });
-      
+
+      // Sort athletes within each age group by name
+      Object.keys(ageGroups).forEach(key => {
+        ageGroups[key].sort((a, b) =>
+          `${a.first_name} ${a.last_name}`.localeCompare(`${b.first_name} ${b.last_name}`)
+        );
+      });
+
       return ageGroups;
     } else {
-      // Group by level
-      const levelGroups: Record<string, typeof genderFiltered> = {
-        'Level 1': [],
-        'Level 2': [],
-        'Level 3': [],
-        'Level 4': [],
-        'Level 5': [],
-        'Level 6': [],
-        'Level 7': [],
-        'Level 8': [],
-        'Level 9': [],
-        'Level 10': [],
-        'Elite': [],
-		'Bronz': [],
-	    'Silver': [],
-		'Gold': [],
-        'No Level': []
+      // Group by level, then by age group within each level
+      const levelGroups: Record<string, Record<string, typeof genderFiltered>> = {
+        'Level 1': {},
+        'Level 2': {},
+        'Level 3': {},
+        'Level 4': {},
+        'Level 5': {},
+        'Level 6': {},
+        'Level 7': {},
+        'Level 8': {},
+        'Level 9': {},
+        'Level 10': {},
+        'Elite': {},
+        'Bronz': {},
+        'Silver': {},
+        'Gold': {},
+        'No Level': {}
       };
-      
+
+      // Initialize age groups within each level
+      const ageGroupsArray = [
+        '7-8 years', '7-9 years', '7-10 years', '7-11 years', '7-13 years',
+        '9 years', '9-10 years', '9-11 years', '10 years', '10-11 years',
+        '11 years', '11-12 years', '12 years', '12-13 years', '12-14 years',
+        '13 years', '14+ years', 'No Age Group'
+      ];
+
+      Object.keys(levelGroups).forEach(level => {
+        ageGroupsArray.forEach(ageGroup => {
+          levelGroups[level][ageGroup] = [];
+        });
+      });
+
       genderFiltered.forEach(athlete => {
-        if (!athlete.level) {
-          levelGroups['No Level'].push(athlete);
-        } else {
-          // Add to the specific level if it exists
-          if (levelGroups[athlete.level]) {
-            levelGroups[athlete.level].push(athlete);
+        const level = athlete.level || 'No Level';
+        const ageGroup = athlete.age || 'No Age Group';
+
+        if (levelGroups[level]) {
+          if (levelGroups[level][ageGroup]) {
+            levelGroups[level][ageGroup].push(athlete);
           } else {
-            levelGroups['No Level'].push(athlete);
+            levelGroups[level]['No Age Group'].push(athlete);
           }
         }
       });
-      
-      return levelGroups;
+
+      // Sort athletes within each age group by name
+      Object.keys(levelGroups).forEach(level => {
+        Object.keys(levelGroups[level]).forEach(ageGroup => {
+          levelGroups[level][ageGroup].sort((a, b) =>
+            `${a.first_name} ${a.last_name}`.localeCompare(`${b.first_name} ${b.last_name}`)
+          );
+        });
+      });
+
+      // Convert nested structure to flat for rendering
+      const flatGroups: Record<string, typeof genderFiltered> = {};
+      Object.keys(levelGroups).forEach(level => {
+        ageGroupsArray.forEach(ageGroup => {
+          const athletes = levelGroups[level][ageGroup];
+          if (athletes.length > 0) {
+            flatGroups[`${level}__${ageGroup}`] = athletes;
+          }
+        });
+      });
+
+      return flatGroups;
     }
   }, [athletes, activeGender, groupBy]);
 
@@ -111,7 +155,9 @@ export function JudgesScoring({ competition, onBack }: JudgesScoringProps) {
     if (groupBy === 'age') {
       return groupKey === 'No Age Group' ? 'No Age Group' : `Age Group ${groupKey}`;
     } else {
-      return groupKey === 'No Level' ? 'No Level' : groupKey;
+      // Format: "Level 1__7-8 years"
+      const [level, ageGroup] = groupKey.split('__');
+      return `${level} • ${ageGroup}`;
     }
   };
 
