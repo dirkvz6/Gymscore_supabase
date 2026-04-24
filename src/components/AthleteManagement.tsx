@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { ArrowLeft, Users, Search, Trash2, Edit, Plus, Check, X, User, Hash } from 'lucide-react';
+import { ArrowLeft, Users, Search, Trash2, CreditCard as Edit, Plus, Check, X, User, Hash } from 'lucide-react';
 import { useAthletes, useDeleteAthlete, useUpdateAthlete } from '../hooks/useAthletes';
 import { Athlete } from '../lib/supabase';
 
@@ -14,37 +14,40 @@ export function AthleteManagement({ onBack, onCreateAthlete }: AthleteManagement
   const [deleteConfirm, setDeleteConfirm] = useState<string | null>(null);
   const [editingAthlete, setEditingAthlete] = useState<string | null>(null);
   const [editForm, setEditForm] = useState<Partial<Athlete>>({});
-  
+
   const { data: athletes } = useAthletes();
   const deleteAthlete = useDeleteAthlete();
   const updateAthlete = useUpdateAthlete();
 
   const ageGroups = [
+    '7-8 years',
     '7-9 years',
     '7-10 years',
     '7-11 years',
     '7-13 years',
     '9 years',
-	'10 years',
+    '9-10 years',
+    '9-11 years',
+    '10 years',
+    '10-11 years',
     '11 years',
+    '11-12 years',
     '12 years',
+    '12-13 years',
+    '12-14 years',
     '13 years',
     '14+ years',
-    '12-13 years',
-    '7-8 years',
-    '9-10 years',
-    '10-11 years'
   ];
 
   // Filter athletes based on search and gender
   const filteredAthletes = athletes?.filter(athlete => {
-    const matchesSearch = searchTerm === '' || 
+    const matchesSearch = searchTerm === '' ||
       `${athlete.first_name} ${athlete.last_name}`.toLowerCase().includes(searchTerm.toLowerCase()) ||
       athlete.club?.toLowerCase().includes(searchTerm.toLowerCase()) ||
       athlete.level?.toLowerCase().includes(searchTerm.toLowerCase());
-    
+
     const matchesGender = selectedGender === 'all' || athlete.gender === selectedGender;
-    
+
     return matchesSearch && matchesGender;
   }) || [];
 
@@ -103,7 +106,7 @@ export function AthleteManagement({ onBack, onCreateAthlete }: AthleteManagement
           <ArrowLeft size={20} />
           <span>Back to Dashboard</span>
         </button>
-        
+
         <button
           onClick={onCreateAthlete}
           className="flex items-center space-x-2 bg-blue-600 text-white px-4 py-2 rounded-lg hover:bg-blue-700 transition-colors"
@@ -240,8 +243,8 @@ export function AthleteManagement({ onBack, onCreateAthlete }: AthleteManagement
                         </select>
                       ) : (
                         <span className={`inline-flex px-2 py-1 text-xs font-semibold rounded-full ${
-                          athlete.gender === 'male' 
-                            ? 'bg-blue-100 text-blue-800' 
+                          athlete.gender === 'male'
+                            ? 'bg-blue-100 text-blue-800'
                             : 'bg-pink-100 text-pink-800'
                         }`}>
                           {athlete.gender.charAt(0).toUpperCase() + athlete.gender.slice(1)}
@@ -345,7 +348,7 @@ export function AthleteManagement({ onBack, onCreateAthlete }: AthleteManagement
             {searchTerm || selectedGender !== 'all' ? 'No athletes found' : 'No athletes yet'}
           </h3>
           <p className="text-gray-500 mb-4">
-            {searchTerm || selectedGender !== 'all' 
+            {searchTerm || selectedGender !== 'all'
               ? 'Try adjusting your search or filter criteria.'
               : 'Add your first athlete to get started.'
             }

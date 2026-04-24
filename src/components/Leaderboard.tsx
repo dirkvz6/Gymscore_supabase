@@ -26,7 +26,7 @@ export function Leaderboard({ competitionId }: LeaderboardProps) {
     const athleteScores = routines.reduce((acc: any, routine: any) => {
       const athleteId = routine.athlete_id;
       const athleteName = `${routine.athlete?.first_name} ${routine.athlete?.last_name}`;
-      
+
       if (!acc[athleteId]) {
         acc[athleteId] = {
           id: athleteId,
@@ -49,27 +49,27 @@ export function Leaderboard({ competitionId }: LeaderboardProps) {
 
     // Group by gender, level, and age, then sort by total score
     const groupedData: Record<string, Record<string, Record<string, any[]>>> = {};
-    
+
     Object.values(athleteScores).forEach((athlete: any) => {
       const gender = athlete.gender || 'unknown';
       const level = athlete.level || 'No Level';
       const ageGroup = athlete.age || 'No Age Group';
-      
+
       if (!groupedData[gender]) {
         groupedData[gender] = {};
       }
-      
+
       if (!groupedData[gender][level]) {
         groupedData[gender][level] = {};
       }
-      
+
       if (!groupedData[gender][level][ageGroup]) {
         groupedData[gender][level][ageGroup] = [];
       }
-      
+
       groupedData[gender][level][ageGroup].push(athlete);
     });
-    
+
     // Sort athletes within each level/age group by total score
     Object.keys(groupedData).forEach(gender => {
       Object.keys(groupedData[gender]).forEach(level => {
@@ -78,7 +78,7 @@ export function Leaderboard({ competitionId }: LeaderboardProps) {
         });
       });
     });
-    
+
     return groupedData;
   }, [routines, events]);
 
@@ -159,7 +159,7 @@ export function Leaderboard({ competitionId }: LeaderboardProps) {
                 <div className="text-sm text-gray-500">Total Score</div>
               </div>
             </div>
-            
+
             {Object.keys(athlete.scores).length > 0 && (
               <div className="mt-3 pt-3 border-t border-gray-200">
                 <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-2">
@@ -178,10 +178,10 @@ export function Leaderboard({ competitionId }: LeaderboardProps) {
     </div>
   );
 
-  // Define level and age group order for consistent display
+  // define level and age group order for consistent display
   const levelOrder = [
     'Level 1',
-    'Level 2', 
+    'Level 2',
     'Level 3',
     'Level 4',
     'Level 5',
@@ -191,27 +191,30 @@ export function Leaderboard({ competitionId }: LeaderboardProps) {
     'Level 9',
     'Level 10',
     'Elite',
-	'Bronz',
-	'Silver',
-	'Gold',
+    'Bronz',
+    'Silver',
+    'Gold',
     'No Level'
   ];
 
   const ageGroupOrder = [
+    '7-8 years',
     '7-9 years',
     '7-10 years',
     '7-11 years',
-	'9 years',
+    '7-13 years',
+    '9 years',
+    '9-10 years',
+    '9-11 years',
     '10 years',
+    '10-11 years',
     '11 years',
+    '11-12 years',
     '12 years',
     '12-13 years',
-    '7-13 years',
+    '12-14 years',
     '13 years',
     '14+ years',
-	'7-8 years',
-	'9-10 years',
-	'10-11 years',
     'No Age Group'
   ];
 
@@ -235,7 +238,7 @@ export function Leaderboard({ competitionId }: LeaderboardProps) {
                 {ageGroupOrder.map(ageGroup => {
                   const athletes = levelData[ageGroup];
                   if (!athletes || athletes.length === 0) return null;
-                  
+
                   return (
                     <div key={`female-${level}-${ageGroup}`}>
                       {renderLeaderboard(athletes, "Women's All-Around", level, ageGroup)}
@@ -247,7 +250,7 @@ export function Leaderboard({ competitionId }: LeaderboardProps) {
           })}
         </div>
       )}
-      
+
       {/* Male Athletes by Level and Age Group */}
       {leaderboardData.male && (
         <div className="space-y-6">
@@ -266,7 +269,7 @@ export function Leaderboard({ competitionId }: LeaderboardProps) {
                 {ageGroupOrder.map(ageGroup => {
                   const athletes = levelData[ageGroup];
                   if (!athletes || athletes.length === 0) return null;
-                  
+
                   return (
                     <div key={`male-${level}-${ageGroup}`}>
                       {renderLeaderboard(athletes, "Men's All-Around", level, ageGroup)}
