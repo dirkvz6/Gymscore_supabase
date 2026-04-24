@@ -54,6 +54,25 @@ export function useDeleteAthlete() {
   });
 }
 
+export function useDeleteAllAthletes() {
+  const queryClient = useQueryClient();
+
+  return useMutation({
+    mutationFn: async () => {
+      const { error } = await supabase
+        .from('athletes')
+        .delete()
+        .neq('id', '');
+
+      if (error) throw error;
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['athletes'] });
+      queryClient.invalidateQueries({ queryKey: ['routines'] });
+    },
+  });
+}
+
 export function useUpdateAthlete() {
   const queryClient = useQueryClient();
   

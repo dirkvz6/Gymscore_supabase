@@ -1,6 +1,6 @@
 import { useState } from 'react';
 import { ArrowLeft, Users, Search, Trash2, CreditCard as Edit, Plus, Check, X, User, Hash } from 'lucide-react';
-import { useAthletes, useDeleteAthlete, useUpdateAthlete } from '../hooks/useAthletes';
+import { useAthletes, useDeleteAthlete, useDeleteAllAthletes, useUpdateAthlete } from '../hooks/useAthletes';
 import { Athlete } from '../lib/supabase';
 
 interface AthleteManagementProps {
@@ -12,11 +12,13 @@ export function AthleteManagement({ onBack, onCreateAthlete }: AthleteManagement
   const [searchTerm, setSearchTerm] = useState('');
   const [selectedGender, setSelectedGender] = useState<'all' | 'male' | 'female'>('all');
   const [deleteConfirm, setDeleteConfirm] = useState<string | null>(null);
+  const [deleteAllConfirm, setDeleteAllConfirm] = useState(false);
   const [editingAthlete, setEditingAthlete] = useState<string | null>(null);
   const [editForm, setEditForm] = useState<Partial<Athlete>>({});
 
   const { data: athletes } = useAthletes();
   const deleteAthlete = useDeleteAthlete();
+  const deleteAllAthletes = useDeleteAllAthletes();
   const updateAthlete = useUpdateAthlete();
 
   const ageGroups = [
@@ -57,6 +59,15 @@ export function AthleteManagement({ onBack, onCreateAthlete }: AthleteManagement
       setDeleteConfirm(null);
     } catch (error) {
       console.error('Error deleting athlete:', error);
+    }
+  };
+
+  const handleDeleteAll = async () => {
+    try {
+      await deleteAllAthletes.mutateAsync();
+      setDeleteAllConfirm(false);
+    } catch (error) {
+      console.error('Error deleting all athletes:', error);
     }
   };
 
@@ -107,13 +118,24 @@ export function AthleteManagement({ onBack, onCreateAthlete }: AthleteManagement
           <span>Back to Dashboard</span>
         </button>
 
-        <button
-          onClick={onCreateAthlete}
-          className="flex items-center space-x-2 bg-blue-600 text-white px-4 py-2 rounded-lg hover:bg-blue-700 transition-colors"
-        >
-          <Plus size={18} />
-          <span>Add Athlete</span>
-        </button>
+        <div className="flex items-center space-x-3">
+          {(athletes?.length || 0) > 0 && (
+            <button
+              onClick={() => setDeleteAllConfirm(true)}
+              className="flex items-center space-x-2 bg-red-600 text-white px-4 py-2 rounded-lg hover:bg-red-700 transition-colors"
+            >
+              <Trash2 size={18} />
+              <span>Delete All</span>
+            </button>
+          )}
+          <button
+            onClick={onCreateAthlete}
+            className="flex items-center space-x-2 bg-blue-600 text-white px-4 py-2 rounded-lg hover:bg-blue-700 transition-colors"
+          >
+            <Plus size={18} />
+            <span>Add Athlete</span>
+          </button>
+        </div>
       </div>
 
       {/* Title and Stats */}
@@ -385,6 +407,33 @@ export function AthleteManagement({ onBack, onCreateAthlete }: AthleteManagement
                 className="px-4 py-2 bg-red-600 text-white rounded-lg hover:bg-red-700 disabled:opacity-50 transition-colors"
               >
                 {deleteAthlete.isPending ? 'Deleting...' : 'Delete'}
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Delete All Confirmation Modal */}
+      {deleteAllConfirm && (
+        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
+          <div className="bg-white rounded-lg p-6 w-full max-w-md mx-4">
+            <h3 className="text-lg font-semibold text-gray-900 mb-4">Delete All Athletes</h3>
+            <p className="text-gray-600 mb-6">
+              Are you sure you want to delete all {athletes?.length || 0} athletes? This action cannot be undone and will also remove all associated scores and routines.
+            </p>
+            <div className="flex justify-end space-x-3">
+              <button
+                onClick={() => setDeleteAllConfirm(false)}
+                className="px-4 py-2 text-gray-700 bg-gray-100 rounded-lg hover:bg-gray-200 transition-colors"
+              >
+                Cancel
+              </button>
+              <button
+                onClick={handleDeleteAll}
+                disabled={deleteAllAthletes.isPending}
+                className="px-4 py-2 bg-red-600 text-white rounded-lg hover:bg-red-700 disabled:opacity-50 transition-colors"
+              >
+                {deleteAllAthletes.isPending ? 'Deleting...' : 'Delete All'}
               </button>
             </div>
           </div>
