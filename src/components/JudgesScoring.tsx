@@ -208,20 +208,27 @@ export function JudgesScoring({ competition, onBack }: JudgesScoringProps) {
   const updateScore = (athleteId: string, eventId: string, field: keyof ScoreEntry, value: string) => {
     const key = getScoreKey(athleteId, eventId);
     const existing = getExistingScore(athleteId, eventId);
-    
+
+    const updatedScore = {
+      athleteId,
+      eventId,
+      difficultyScore: existing?.difficultyScore || '0.000',
+      executionScore: existing?.executionScore || '0.000',
+      deductions: existing?.deductions || '0.000',
+      routineId: existing?.routineId,
+      ...scores[key],
+      [field]: value
+    };
+
     setScores(prev => ({
       ...prev,
-      [key]: {
-        athleteId,
-        eventId,
-        difficultyScore: existing?.difficultyScore || '0.000',
-        executionScore: existing?.executionScore || '0.000',
-        deductions: existing?.deductions || '0.000',
-        routineId: existing?.routineId,
-        ...prev[key],
-        [field]: value
-      }
+      [key]: updatedScore
     }));
+
+    // Auto-save after a short delay
+    setTimeout(() => {
+      saveScore(athleteId, eventId);
+    }, 300);
   };
 
   const calculateFinalScore = (diffScore: string, execScore: string, deductions: string) => {
@@ -280,16 +287,16 @@ export function JudgesScoring({ competition, onBack }: JudgesScoringProps) {
     }
   };
 
-  const ScoreCell = ({ 
-    athleteId, 
-    eventId, 
-    field, 
-    placeholder, 
-    step = "0.001" 
-  }: { 
-    athleteId: string; 
-    eventId: string; 
-    field: keyof ScoreEntry; 
+  const ScoreCell = ({
+    athleteId,
+    eventId,
+    field,
+    placeholder,
+    step = "0.001"
+  }: {
+    athleteId: string;
+    eventId: string;
+    field: keyof ScoreEntry;
     placeholder: string;
     step?: string;
   }) => {
@@ -298,7 +305,8 @@ export function JudgesScoring({ competition, onBack }: JudgesScoringProps) {
     const isEditing = editingCell === cellKey;
     const existing = getExistingScore(athleteId, eventId);
     const currentScore = scores[scoreKey];
-    
+    const isSaving = saving === scoreKey;
+
     let displayValue = '';
     if (field === 'difficultyScore') {
       displayValue = currentScore?.difficultyScore || existing?.difficultyScore || '';
@@ -307,12 +315,6 @@ export function JudgesScoring({ competition, onBack }: JudgesScoringProps) {
     } else if (field === 'deductions') {
       displayValue = currentScore?.deductions || existing?.deductions || '';
     }
-
-    const hasChanges = currentScore && (
-      currentScore.difficultyScore !== (existing?.difficultyScore || '0.000') ||
-      currentScore.executionScore !== (existing?.executionScore || '0.000') ||
-      currentScore.deductions !== (existing?.deductions || '0.000')
-    );
 
     if (isEditing) {
       return (
@@ -340,9 +342,9 @@ export function JudgesScoring({ competition, onBack }: JudgesScoringProps) {
       <div
         onClick={() => setEditingCell(cellKey)}
         className={`px-2 py-1 text-sm cursor-pointer rounded transition-colors ${
-          displayValue 
-            ? hasChanges 
-              ? 'bg-yellow-50 text-yellow-900 border border-yellow-200' 
+          displayValue
+            ? isSaving
+              ? 'bg-blue-50 text-blue-900'
               : 'bg-green-50 text-green-900'
             : 'bg-gray-50 text-gray-500 hover:bg-gray-100'
         }`}
@@ -356,7 +358,8 @@ export function JudgesScoring({ competition, onBack }: JudgesScoringProps) {
     const scoreKey = getScoreKey(athleteId, eventId);
     const existing = getExistingScore(athleteId, eventId);
     const currentScore = scores[scoreKey];
-    
+    const isSaving = saving === scoreKey;
+
     let finalScore = 0;
     if (currentScore) {
       finalScore = calculateFinalScore(
@@ -368,17 +371,11 @@ export function JudgesScoring({ competition, onBack }: JudgesScoringProps) {
       finalScore = parseFloat(existing.finalScore);
     }
 
-    const hasChanges = currentScore && (
-      currentScore.difficultyScore !== (existing?.difficultyScore || '0.000') ||
-      currentScore.executionScore !== (existing?.executionScore || '0.000') ||
-      currentScore.deductions !== (existing?.deductions || '0.000')
-    );
-
     return (
       <div className={`px-2 py-1 text-sm font-semibold rounded ${
-        finalScore > 0 
-          ? hasChanges 
-            ? 'bg-yellow-100 text-yellow-900' 
+        finalScore > 0
+          ? isSaving
+            ? 'bg-blue-100 text-blue-900'
             : 'bg-blue-100 text-blue-900'
           : 'bg-gray-100 text-gray-500'
       }`}>
@@ -389,48 +386,13 @@ export function JudgesScoring({ competition, onBack }: JudgesScoringProps) {
 
   const ActionCell = ({ athleteId, eventId }: { athleteId: string; eventId: string }) => {
     const scoreKey = getScoreKey(athleteId, eventId);
-    const currentScore = scores[scoreKey];
-    const existing = getExistingScore(athleteId, eventId);
     const isSaving = saving === scoreKey;
-    
-    const hasChanges = currentScore && (
-      currentScore.difficultyScore !== (existing?.difficultyScore || '0.000') ||
-      currentScore.executionScore !== (existing?.executionScore || '0.000') ||
-      currentScore.deductions !== (existing?.deductions || '0.000')
-    );
+    const existing = getExistingScore(athleteId, eventId);
 
     if (isSaving) {
       return (
         <div className="flex justify-center">
           <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-blue-600"></div>
-        </div>
-      );
-    }
-
-    if (hasChanges) {
-      return (
-        <div className="flex space-x-1">
-          <button
-            onClick={() => saveScore(athleteId, eventId)}
-            className="p-1 text-green-600 hover:bg-green-100 rounded transition-colors"
-            title="Save changes"
-          >
-            <Check size={14} />
-          </button>
-          <button
-            onClick={() => {
-              const key = getScoreKey(athleteId, eventId);
-              setScores(prev => {
-                const newScores = { ...prev };
-                delete newScores[key];
-                return newScores;
-              });
-            }}
-            className="p-1 text-red-600 hover:bg-red-100 rounded transition-colors"
-            title="Cancel changes"
-          >
-            <X size={14} />
-          </button>
         </div>
       );
     }
