@@ -332,6 +332,7 @@ export function JudgesScoring({ competition, onBack }: JudgesScoringProps) {
               setEditingCell(null);
             }
           }}
+          onFocus={(e) => e.target.select()}
           className="w-full px-2 py-1 text-sm border border-blue-500 rounded focus:outline-none focus:ring-1 focus:ring-blue-500"
           autoFocus
         />
