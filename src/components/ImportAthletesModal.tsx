@@ -26,6 +26,11 @@ export function ImportAthletesModal({ isOpen, onClose }: ImportAthletesModalProp
   const createAthlete = useCreateAthlete();
 
   const validAgeGroups = [
+    '6 years',
+    '7 years',
+    '6-7 years',
+    '8 years',
+    '8-10 years',
     '7-9 years',
     '7-10 years',
     '7-11 years',

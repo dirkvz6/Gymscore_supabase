@@ -18,6 +18,11 @@ export function CreateAthleteModal({ isOpen, onClose }: CreateAthleteModalProps)
   const createAthlete = useCreateAthlete();
 
   const ageGroups = [
+    '6 years',
+    '7 years',
+    '6-7 years',
+    '8 years',
+    '8-10 years',
     '7-8 years',
     '7-9 years',
     '7-10 years',

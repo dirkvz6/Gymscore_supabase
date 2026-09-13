@@ -39,6 +39,11 @@ export function JudgesScoring({ competition, onBack }: JudgesScoringProps) {
     if (groupBy === 'age') {
       // Group by age groups
       const ageGroups: Record<string, typeof genderFiltered> = {
+        '6 years': [],
+        '7 years': [],
+        '6-7 years': [],
+        '8 years': [],
+        '8-10 years': [],
         '7-8 years': [],
         '7-9 years': [],
         '7-10 years': [],
@@ -102,6 +107,7 @@ export function JudgesScoring({ competition, onBack }: JudgesScoringProps) {
 
       // Initialize age groups within each level
       const ageGroupsArray = [
+        '6 years', '7 years', '6-7 years', '8 years', '8-10 years',
         '7-8 years', '7-9 years', '7-10 years', '7-11 years', '7-13 years',
         '9 years', '9-10 years', '9-11 years', '10 years', '10-11 years',
         '11 years', '11-12 years', '12 years', '12-13 years', '12-14 years',
