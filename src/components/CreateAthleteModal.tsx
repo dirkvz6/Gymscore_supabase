@@ -37,6 +37,23 @@ export function CreateAthleteModal({ isOpen, onClose }: CreateAthleteModalProps)
     '14+ years',
   ];
 
+  const levels = [
+    'Level 1',
+    'Level 2',
+    'Level 3',
+    'Level 4',
+    'Level 5',
+    'Level 6',
+    'Level 7',
+    'Level 8',
+    'Level 9',
+    'Level 10',
+    'Elite',
+    'Bronze',
+    'Silver',
+    'Gold',
+  ];
+
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setLoading(true);
@@ -168,13 +185,18 @@ export function CreateAthleteModal({ isOpen, onClose }: CreateAthleteModalProps)
             <label className="block text-sm font-medium text-gray-700 mb-2">
               Level (Optional)
             </label>
-            <input
-              type="text"
+            <select
               value={level}
               onChange={(e) => setLevel(e.target.value)}
               className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-              placeholder="Enter level"
-            />
+            >
+              <option value="">Select level</option>
+              {levels.map((lvl) => (
+                <option key={lvl} value={lvl}>
+                  {lvl}
+                </option>
+              ))}
+            </select>
           </div>
 
           <button

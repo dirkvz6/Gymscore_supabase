@@ -41,6 +41,23 @@ export function AthleteManagement({ onBack, onCreateAthlete }: AthleteManagement
     '14+ years',
   ];
 
+  const levels = [
+    'Level 1',
+    'Level 2',
+    'Level 3',
+    'Level 4',
+    'Level 5',
+    'Level 6',
+    'Level 7',
+    'Level 8',
+    'Level 9',
+    'Level 10',
+    'Elite',
+    'Bronze',
+    'Silver',
+    'Gold',
+  ];
+
   // Filter athletes based on search and gender
   const filteredAthletes = athletes?.filter(athlete => {
     const matchesSearch = searchTerm === '' ||
@@ -306,13 +323,18 @@ export function AthleteManagement({ onBack, onCreateAthlete }: AthleteManagement
                     </td>
                     <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
                       {editingAthlete === athlete.id ? (
-                        <input
-                          type="text"
+                        <select
                           value={editForm.level || ''}
                           onChange={(e) => setEditForm(prev => ({ ...prev, level: e.target.value || undefined }))}
                           className="w-full px-2 py-1 text-sm border border-gray-300 rounded focus:ring-1 focus:ring-blue-500 focus:border-blue-500"
-                          placeholder="Level"
-                        />
+                        >
+                          <option value="">Select level</option>
+                          {levels.map((lvl) => (
+                            <option key={lvl} value={lvl}>
+                              {lvl}
+                            </option>
+                          ))}
+                        </select>
                       ) : (
                         athlete.level || '-'
                       )}
