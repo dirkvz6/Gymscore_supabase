@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import { useState } from 'react';
 import { Competition } from '../lib/supabase';
 import { ArrowLeft, Users, Trophy, FileDown, Gavel } from 'lucide-react';
 import { ScoreEntry } from './ScoreEntry';

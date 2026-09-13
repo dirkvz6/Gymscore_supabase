@@ -54,43 +54,15 @@ export function useDeleteCompetition() {
     },
   });
 }
+
 export function useCreateCompetition() {
   const queryClient = useQueryClient();
 
   return useMutation({
     mutationFn: async (competition: Omit<Competition, 'id' | 'created_at' | 'user_id'>) => {
-      const { data: { user }, error: authError } = await supabase.auth.getUser();
-      if (authError || !user) {
-        throw new Error('You must be logged in to create a competition');
-      }
-
-      // Ensure user profile exists
-      const { data: existingUser } = await supabase
-        .from('users')
-        .select('id')
-        .eq('id', user.id)
-        .maybeSingle();
-
-      if (!existingUser) {
-        const { error: profileError } = await supabase
-          .from('users')
-          .insert([
-            {
-              id: user.id,
-              email: user.email,
-            },
-          ])
-          .select()
-          .single();
-
-        if (profileError) {
-          throw new Error('Failed to create user profile');
-        }
-      }
-
       const { data, error } = await supabase
         .from('competitions')
-        .insert([{ ...competition, user_id: user.id }])
+        .insert([competition])
         .select()
         .single();
 

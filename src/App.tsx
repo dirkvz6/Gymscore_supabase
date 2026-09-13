@@ -1,7 +1,6 @@
 import { useState } from 'react';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import { Header } from './components/Header';
-import { AuthModal } from './components/AuthModal';
 import { CompetitionCard } from './components/CompetitionCard';
 import { CreateCompetitionModal } from './components/CreateCompetitionModal';
 import { CreateAthleteModal } from './components/CreateAthleteModal';
@@ -9,7 +8,6 @@ import { ImportAthletesModal } from './components/ImportAthletesModal';
 import { ManageCompetitionModal } from './components/ManageCompetitionModal';
 import { AthleteManagement } from './components/AthleteManagement';
 import CompetitionDetail from './components/CompetitionDetail';
-import { useAuth } from './hooks/useAuth';
 import { useCompetitions } from './hooks/useCompetitions';
 import { useAthletes } from './hooks/useAthletes';
 import { Competition } from './lib/supabase';
@@ -18,14 +16,12 @@ import { Plus, Users, Trophy, Calendar, Upload, Settings } from 'lucide-react';
 const queryClient = new QueryClient();
 
 function AppContent() {
-  const [showAuth, setShowAuth] = useState(false);
   const [showCreateCompetition, setShowCreateCompetition] = useState(false);
   const [showCreateAthlete, setShowCreateAthlete] = useState(false);
   const [showImportAthletes, setShowImportAthletes] = useState(false);
   const [selectedCompetition, setSelectedCompetition] = useState<Competition | null>(null);
   const [managingCompetition, setManagingCompetition] = useState<Competition | null>(null);
   const [showAthleteManagement, setShowAthleteManagement] = useState(false);
-  const { user } = useAuth();
   const { data: competitions } = useCompetitions();
   const { data: athletes } = useAthletes();
 
@@ -52,7 +48,7 @@ function AppContent() {
   }
   return (
     <div className="min-h-screen bg-gray-50">
-      <Header onAuthClick={() => setShowAuth(true)} />
+      <Header />
       
       <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
         <div className="mb-8">
@@ -98,38 +94,36 @@ function AppContent() {
         </div>
 
         {/* Action Buttons */}
-        {user && (
-          <div className="flex flex-wrap gap-4 mb-8">
-            <button
-              onClick={() => setShowCreateCompetition(true)}
-              className="flex items-center space-x-2 bg-blue-600 text-white px-4 py-2 rounded-lg hover:bg-blue-700 transition-colors"
-            >
-              <Plus size={18} />
-              <span>Create Competition</span>
-            </button>
-            <button
-              onClick={() => setShowCreateAthlete(true)}
-              className="flex items-center space-x-2 bg-green-600 text-white px-4 py-2 rounded-lg hover:bg-green-700 transition-colors"
-            >
-              <Plus size={18} />
-              <span>Add Athlete</span>
-            </button>
-            <button
-              onClick={() => setShowImportAthletes(true)}
-              className="flex items-center space-x-2 bg-purple-600 text-white px-4 py-2 rounded-lg hover:bg-purple-700 transition-colors"
-            >
-              <Upload size={18} />
-              <span>Import Athletes</span>
-            </button>
-            <button
-              onClick={() => setShowAthleteManagement(true)}
-              className="flex items-center space-x-2 bg-gray-600 text-white px-4 py-2 rounded-lg hover:bg-gray-700 transition-colors"
-            >
-              <Settings size={18} />
-              <span>Manage Athletes</span>
-            </button>
-          </div>
-        )}
+        <div className="flex flex-wrap gap-4 mb-8">
+          <button
+            onClick={() => setShowCreateCompetition(true)}
+            className="flex items-center space-x-2 bg-blue-600 text-white px-4 py-2 rounded-lg hover:bg-blue-700 transition-colors"
+          >
+            <Plus size={18} />
+            <span>Create Competition</span>
+          </button>
+          <button
+            onClick={() => setShowCreateAthlete(true)}
+            className="flex items-center space-x-2 bg-green-600 text-white px-4 py-2 rounded-lg hover:bg-green-700 transition-colors"
+          >
+            <Plus size={18} />
+            <span>Add Athlete</span>
+          </button>
+          <button
+            onClick={() => setShowImportAthletes(true)}
+            className="flex items-center space-x-2 bg-purple-600 text-white px-4 py-2 rounded-lg hover:bg-purple-700 transition-colors"
+          >
+            <Upload size={18} />
+            <span>Import Athletes</span>
+          </button>
+          <button
+            onClick={() => setShowAthleteManagement(true)}
+            className="flex items-center space-x-2 bg-gray-600 text-white px-4 py-2 rounded-lg hover:bg-gray-700 transition-colors"
+          >
+            <Settings size={18} />
+            <span>Manage Athletes</span>
+          </button>
+        </div>
 
         {/* Competitions Sections */}
         <div className="space-y-8">
@@ -143,7 +137,7 @@ function AppContent() {
                     key={competition.id}
                     competition={competition}
                     onClick={() => setSelectedCompetition(competition)}
-                    onManage={user?.id === competition.user_id ? () => setManagingCompetition(competition) : undefined}
+                    onManage={() => setManagingCompetition(competition)}
                   />
                 ))}
               </div>
@@ -160,7 +154,7 @@ function AppContent() {
                     key={competition.id}
                     competition={competition}
                     onClick={() => setSelectedCompetition(competition)}
-                    onManage={user?.id === competition.user_id ? () => setManagingCompetition(competition) : undefined}
+                    onManage={() => setManagingCompetition(competition)}
                   />
                 ))}
               </div>
@@ -177,7 +171,7 @@ function AppContent() {
                     key={competition.id}
                     competition={competition}
                     onClick={() => setSelectedCompetition(competition)}
-                    onManage={user?.id === competition.user_id ? () => setManagingCompetition(competition) : undefined}
+                    onManage={() => setManagingCompetition(competition)}
                   />
                 ))}
               </div>
@@ -192,21 +186,18 @@ function AppContent() {
               <p className="text-gray-500 mb-4">
                 Create your first competition to get started with scoring.
               </p>
-              {user && (
-                <button
-                  onClick={() => setShowCreateCompetition(true)}
-                  className="bg-blue-600 text-white px-4 py-2 rounded-lg hover:bg-blue-700 transition-colors"
-                >
-                  Create Competition
-                </button>
-              )}
+              <button
+                onClick={() => setShowCreateCompetition(true)}
+                className="bg-blue-600 text-white px-4 py-2 rounded-lg hover:bg-blue-700 transition-colors"
+              >
+                Create Competition
+              </button>
             </div>
           )}
         </div>
       </main>
 
       {/* Modals */}
-      <AuthModal isOpen={showAuth} onClose={() => setShowAuth(false)} />
       <CreateCompetitionModal
         isOpen={showCreateCompetition}
         onClose={() => setShowCreateCompetition(false)}

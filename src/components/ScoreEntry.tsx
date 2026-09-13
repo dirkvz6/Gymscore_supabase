@@ -5,8 +5,8 @@ import { useEvents } from '../hooks/useEvents';
 import { useCreateRoutine } from '../hooks/useRoutines';
 
 interface ScoreEntryProps {
-  isOpen: boolean;
-  onClose: () => void;
+  isOpen?: boolean;
+  onClose?: () => void;
   competitionId: string;
 }
 
@@ -43,7 +43,9 @@ export function ScoreEntry({ isOpen, onClose, competitionId }: ScoreEntryProps) 
         status: 'completed',
       });
 
-      onClose();
+      if (onClose) {
+        onClose();
+      }
       setAthleteId('');
       setEventId('');
       setDifficultyScore('');
