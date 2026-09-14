@@ -1,25 +1,45 @@
-import { useState } from 'react';
-import { ArrowLeft, Users, Search, Trash2, CreditCard as Edit, Plus, Check, X, User, Hash } from 'lucide-react';
+import { useState, useMemo } from 'react';
+import { ArrowLeft, Users, Search, Trash2, CreditCard as Edit, Plus, Check, X, User, Hash, UserPlus, UserMinus, UserCheck } from 'lucide-react';
 import { useAthletes, useDeleteAthlete, useDeleteAllAthletes, useUpdateAthlete } from '../hooks/useAthletes';
+import { useCompetitionAthleteIds, useRegisterAthleteForCompetition, useUnregisterAthleteFromCompetition, useRegisterAllAthletesForCompetition } from '../hooks/useCompetitionAthletes';
 import { Athlete } from '../lib/supabase';
 
 interface AthleteManagementProps {
   onBack: () => void;
   onCreateAthlete: () => void;
+  competitionId?: string;
 }
 
-export function AthleteManagement({ onBack, onCreateAthlete }: AthleteManagementProps) {
+export function AthleteManagement({ onBack, onCreateAthlete, competitionId }: AthleteManagementProps) {
   const [searchTerm, setSearchTerm] = useState('');
   const [selectedGender, setSelectedGender] = useState<'all' | 'male' | 'female'>('all');
   const [deleteConfirm, setDeleteConfirm] = useState<string | null>(null);
   const [deleteAllConfirm, setDeleteAllConfirm] = useState(false);
   const [editingAthlete, setEditingAthlete] = useState<string | null>(null);
   const [editForm, setEditForm] = useState<Partial<Athlete>>({});
+  const [showRegisterPanel, setShowRegisterPanel] = useState(false);
+
+  const isCompetitionMode = !!competitionId;
 
   const { data: athletes } = useAthletes();
   const deleteAthlete = useDeleteAthlete();
   const deleteAllAthletes = useDeleteAllAthletes();
   const updateAthlete = useUpdateAthlete();
+
+  const { data: registeredIds } = useCompetitionAthleteIds(competitionId || '');
+  const registerAthlete = useRegisterAthleteForCompetition();
+  const unregisterAthlete = useUnregisterAthleteFromCompetition();
+  const registerAllAthletes = useRegisterAllAthletesForCompetition();
+
+  const registeredAthletes = useMemo(() => {
+    if (!competitionId || !registeredIds || !athletes) return athletes || [];
+    return athletes.filter(a => registeredIds.has(a.id));
+  }, [athletes, competitionId, registeredIds]);
+
+  const unregisteredAthletes = useMemo(() => {
+    if (!competitionId || !registeredIds || !athletes) return [];
+    return athletes.filter(a => !registeredIds.has(a.id));
+  }, [athletes, competitionId, registeredIds]);
 
   const ageGroups = [
     '6 years',
@@ -64,7 +84,8 @@ export function AthleteManagement({ onBack, onCreateAthlete }: AthleteManagement
   ];
 
   // Filter athletes based on search and gender
-  const filteredAthletes = athletes?.filter(athlete => {
+  const sourceAthletes = isCompetitionMode ? registeredAthletes : (athletes || []);
+  const filteredAthletes = sourceAthletes.filter(athlete => {
     const matchesSearch = searchTerm === '' ||
       `${athlete.first_name} ${athlete.last_name}`.toLowerCase().includes(searchTerm.toLowerCase()) ||
       athlete.club?.toLowerCase().includes(searchTerm.toLowerCase()) ||
@@ -73,7 +94,7 @@ export function AthleteManagement({ onBack, onCreateAthlete }: AthleteManagement
     const matchesGender = selectedGender === 'all' || athlete.gender === selectedGender;
 
     return matchesSearch && matchesGender;
-  }) || [];
+  });
 
   const handleDelete = async (athleteId: string) => {
     try {
@@ -125,8 +146,8 @@ export function AthleteManagement({ onBack, onCreateAthlete }: AthleteManagement
     }
   };
 
-  const maleCount = athletes?.filter(a => a.gender === 'male').length || 0;
-  const femaleCount = athletes?.filter(a => a.gender === 'female').length || 0;
+  const maleCount = sourceAthletes.filter(a => a.gender === 'male').length;
+  const femaleCount = sourceAthletes.filter(a => a.gender === 'female').length;
 
   return (
     <div className="space-y-6">
@@ -141,7 +162,16 @@ export function AthleteManagement({ onBack, onCreateAthlete }: AthleteManagement
         </button>
 
         <div className="flex items-center space-x-3">
-          {(athletes?.length || 0) > 0 && (
+          {isCompetitionMode && (
+            <button
+              onClick={() => setShowRegisterPanel(!showRegisterPanel)}
+              className="flex items-center space-x-2 bg-green-600 text-white px-4 py-2 rounded-lg hover:bg-green-700 transition-colors"
+            >
+              <UserPlus size={18} />
+              <span>Register Athletes</span>
+            </button>
+          )}
+          {!isCompetitionMode && (athletes?.length || 0) > 0 && (
             <button
               onClick={() => setDeleteAllConfirm(true)}
               className="flex items-center space-x-2 bg-red-600 text-white px-4 py-2 rounded-lg hover:bg-red-700 transition-colors"
@@ -163,11 +193,13 @@ export function AthleteManagement({ onBack, onCreateAthlete }: AthleteManagement
       {/* Title and Stats */}
       <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-6">
         <div className="flex items-center justify-between mb-4">
-          <h1 className="text-3xl font-bold text-gray-900">Athlete Management</h1>
+          <h1 className="text-3xl font-bold text-gray-900">
+            {isCompetitionMode ? 'Competition Athletes' : 'Athlete Management'}
+          </h1>
           <div className="flex items-center space-x-4 text-sm text-gray-600">
             <div className="flex items-center space-x-2">
               <Users size={16} />
-              <span>{athletes?.length || 0} total athletes</span>
+              <span>{sourceAthletes.length} {isCompetitionMode ? 'registered' : 'total'} athletes</span>
             </div>
           </div>
         </div>
@@ -175,8 +207,8 @@ export function AthleteManagement({ onBack, onCreateAthlete }: AthleteManagement
         {/* Stats Cards */}
         <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
           <div className="bg-blue-50 border border-blue-200 rounded-lg p-4">
-            <div className="text-2xl font-bold text-blue-600">{athletes?.length || 0}</div>
-            <div className="text-sm text-blue-700">Total Athletes</div>
+            <div className="text-2xl font-bold text-blue-600">{sourceAthletes.length}</div>
+            <div className="text-sm text-blue-700">{isCompetitionMode ? 'Registered' : 'Total Athletes'}</div>
           </div>
           <div className="bg-green-50 border border-green-200 rounded-lg p-4">
             <div className="text-2xl font-bold text-green-600">{maleCount}</div>
@@ -220,6 +252,86 @@ export function AthleteManagement({ onBack, onCreateAthlete }: AthleteManagement
           </div>
         </div>
       </div>
+
+      {/* Registration Panel */}
+      {showRegisterPanel && isCompetitionMode && (
+        <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-6">
+          <div className="flex items-center justify-between mb-4">
+            <h2 className="text-xl font-bold text-gray-900">Register Athletes for Competition</h2>
+            <div className="flex items-center space-x-3">
+              {unregisteredAthletes.length > 0 && (
+                <button
+                  onClick={() => {
+                    registerAllAthletes.mutateAsync({
+                      competitionId: competitionId!,
+                      athleteIds: unregisteredAthletes.map(a => a.id),
+                    });
+                  }}
+                  disabled={registerAllAthletes.isPending}
+                  className="flex items-center space-x-2 bg-green-600 text-white px-3 py-1.5 rounded-lg hover:bg-green-700 transition-colors text-sm"
+                >
+                  <UserCheck size={16} />
+                  <span>Register All ({unregisteredAthletes.length})</span>
+                </button>
+              )}
+              <button
+                onClick={() => setShowRegisterPanel(false)}
+                className="text-gray-400 hover:text-gray-600 transition-colors"
+              >
+                <X size={20} />
+              </button>
+            </div>
+          </div>
+
+          {unregisteredAthletes.length > 0 ? (
+            <div className="space-y-2 max-h-80 overflow-y-auto">
+              {unregisteredAthletes.map((athlete) => (
+                <div
+                  key={athlete.id}
+                  className="flex items-center justify-between border border-gray-200 rounded-lg p-3 hover:bg-gray-50"
+                >
+                  <div className="flex items-center space-x-3">
+                    <div className={`flex items-center justify-center w-8 h-8 rounded-full ${
+                      athlete.gender === 'male' ? 'bg-blue-100' : 'bg-pink-100'
+                    }`}>
+                      <User size={16} className={athlete.gender === 'male' ? 'text-blue-600' : 'text-pink-600'} />
+                    </div>
+                    <div>
+                      <div className="font-medium text-gray-900">
+                        {athlete.first_name} {athlete.last_name}
+                      </div>
+                      <div className="text-sm text-gray-500">
+                        {athlete.gender === 'male' ? 'Male' : 'Female'}
+                        {athlete.age && ` • ${athlete.age}`}
+                        {athlete.level && ` • ${athlete.level}`}
+                        {athlete.club && ` • ${athlete.club}`}
+                      </div>
+                    </div>
+                  </div>
+                  <button
+                    onClick={() => {
+                      registerAthlete.mutateAsync({
+                        competitionId: competitionId!,
+                        athleteId: athlete.id,
+                      });
+                    }}
+                    disabled={registerAthlete.isPending}
+                    className="flex items-center space-x-1 bg-green-600 text-white px-3 py-1.5 rounded-lg hover:bg-green-700 transition-colors text-sm"
+                  >
+                    <UserPlus size={14} />
+                    <span>Register</span>
+                  </button>
+                </div>
+              ))}
+            </div>
+          ) : (
+            <div className="text-center py-8">
+              <UserCheck className="mx-auto h-10 w-10 text-gray-400 mb-2" />
+              <p className="text-gray-600">All athletes are already registered for this competition.</p>
+            </div>
+          )}
+        </div>
+      )}
 
       {/* Athletes Grid */}
       {filteredAthletes.length > 0 ? (
@@ -366,6 +478,21 @@ export function AthleteManagement({ onBack, onCreateAthlete }: AthleteManagement
                           </>
                         ) : (
                           <>
+                            {isCompetitionMode && (
+                              <button
+                                onClick={() => {
+                                  unregisterAthlete.mutateAsync({
+                                    competitionId: competitionId!,
+                                    athleteId: athlete.id,
+                                  });
+                                }}
+                                disabled={unregisterAthlete.isPending}
+                                className="text-orange-600 hover:text-orange-900 p-1 rounded hover:bg-orange-50 transition-colors disabled:opacity-50"
+                                title="Unregister from competition"
+                              >
+                                <UserMinus size={16} />
+                              </button>
+                            )}
                             <button
                               onClick={() => startEdit(athlete)}
                               className="text-blue-600 hover:text-blue-900 p-1 rounded hover:bg-blue-50 transition-colors"
@@ -373,13 +500,15 @@ export function AthleteManagement({ onBack, onCreateAthlete }: AthleteManagement
                             >
                               <Edit size={16} />
                             </button>
-                            <button
-                              onClick={() => setDeleteConfirm(athlete.id)}
-                              className="text-red-600 hover:text-red-900 p-1 rounded hover:bg-red-50 transition-colors"
-                              title="Delete athlete"
-                            >
-                              <Trash2 size={16} />
-                            </button>
+                            {!isCompetitionMode && (
+                              <button
+                                onClick={() => setDeleteConfirm(athlete.id)}
+                                className="text-red-600 hover:text-red-900 p-1 rounded hover:bg-red-50 transition-colors"
+                                title="Delete athlete"
+                              >
+                                <Trash2 size={16} />
+                              </button>
+                            )}
                           </>
                         )}
                       </div>
@@ -394,15 +523,31 @@ export function AthleteManagement({ onBack, onCreateAthlete }: AthleteManagement
         <div className="text-center py-12">
           <Users className="mx-auto h-12 w-12 text-gray-400 mb-4" />
           <h3 className="text-lg font-medium text-gray-900 mb-2">
-            {searchTerm || selectedGender !== 'all' ? 'No athletes found' : 'No athletes yet'}
+            {isCompetitionMode
+              ? (registeredAthletes.length === 0 && unregisteredAthletes.length > 0
+                ? 'No athletes registered yet'
+                : 'No athletes found')
+              : (searchTerm || selectedGender !== 'all' ? 'No athletes found' : 'No athletes yet')}
           </h3>
           <p className="text-gray-500 mb-4">
-            {searchTerm || selectedGender !== 'all'
-              ? 'Try adjusting your search or filter criteria.'
-              : 'Add your first athlete to get started.'
+            {isCompetitionMode
+              ? (registeredAthletes.length === 0 && unregisteredAthletes.length > 0
+                ? 'Click "Register Athletes" to add athletes to this competition.'
+                : 'Try adjusting your search or filter criteria.')
+              : (searchTerm || selectedGender !== 'all'
+                ? 'Try adjusting your search or filter criteria.'
+                : 'Add your first athlete to get started.')
             }
           </p>
-          {(!searchTerm && selectedGender === 'all') && (
+          {isCompetitionMode && registeredAthletes.length === 0 && unregisteredAthletes.length > 0 && (
+            <button
+              onClick={() => setShowRegisterPanel(true)}
+              className="bg-green-600 text-white px-4 py-2 rounded-lg hover:bg-green-700 transition-colors"
+            >
+              Register Athletes
+            </button>
+          )}
+          {!isCompetitionMode && (!searchTerm && selectedGender === 'all') && (
             <button
               onClick={onCreateAthlete}
               className="bg-blue-600 text-white px-4 py-2 rounded-lg hover:bg-blue-700 transition-colors"

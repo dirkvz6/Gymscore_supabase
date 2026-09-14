@@ -77,3 +77,10 @@ export interface Score {
   notes?: string;
   created_at: string;
 }
+
+export interface CompetitionAthlete {
+  id: string;
+  competition_id: string;
+  athlete_id: string;
+  created_at: string;
+}

@@ -2,6 +2,7 @@ import { useState, useMemo } from 'react';
 import { ArrowLeft, Users, Trophy, Save, CreditCard as Edit3, Check, X } from 'lucide-react';
 import { Competition } from '../lib/supabase';
 import { useAthletes } from '../hooks/useAthletes';
+import { useCompetitionAthletes } from '../hooks/useCompetitionAthletes';
 import { useEvents } from '../hooks/useEvents';
 import { useRoutines, useCreateRoutine, useUpdateRoutine } from '../hooks/useRoutines';
 
@@ -26,7 +27,9 @@ export function JudgesScoring({ competition, onBack }: JudgesScoringProps) {
   const [scores, setScores] = useState<Record<string, ScoreEntry>>({});
   const [saving, setSaving] = useState<string | null>(null);
 
-  const { data: athletes } = useAthletes();
+  const { data: allAthletes } = useAthletes();
+  const { data: competitionAthletes } = useCompetitionAthletes(competition.id);
+  const athletes = competitionAthletes || allAthletes;
   const { data: events } = useEvents();
   const { data: routines } = useRoutines(competition.id);
   const createRoutine = useCreateRoutine();
@@ -592,10 +595,10 @@ export function JudgesScoring({ competition, onBack }: JudgesScoringProps) {
         <div className="text-center py-12">
           <Trophy className="mx-auto h-12 w-12 text-gray-400 mb-4" />
           <h3 className="text-lg font-medium text-gray-900 mb-2">
-            No {activeGender} athletes found
+            No {activeGender === 'female' ? "women's" : "men's"} athletes registered
           </h3>
           <p className="text-gray-500">
-            Add athletes to start scoring for this competition.
+            Register athletes for this competition on the Manage Athletes tab to start scoring.
           </p>
         </div>
       )}

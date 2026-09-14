@@ -47,7 +47,7 @@ export default function CompetitionDetail({ competition, onBack }: CompetitionDe
   const renderTabContent = () => {
     switch (activeTab) {
       case 'athletes':
-        return <AthleteManagement onBack={() => setActiveTab('athletes')} onCreateAthlete={() => {}} />;
+        return <AthleteManagement onBack={() => setActiveTab('athletes')} onCreateAthlete={() => {}} competitionId={competition.id} />;
       case 'scoring':
         return <ScoreEntry competitionId={competition.id} />;
       case 'judges':

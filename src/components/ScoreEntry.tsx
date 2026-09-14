@@ -1,6 +1,6 @@
 import { useState } from 'react';
 import { X, User, Trophy, Hash } from 'lucide-react';
-import { useAthletes } from '../hooks/useAthletes';
+import { useCompetitionAthletes } from '../hooks/useCompetitionAthletes';
 import { useEvents } from '../hooks/useEvents';
 import { useCreateRoutine } from '../hooks/useRoutines';
 
@@ -18,7 +18,7 @@ export function ScoreEntry({ isOpen, onClose, competitionId }: ScoreEntryProps) 
   const [deductions, setDeductions] = useState('');
   const [loading, setLoading] = useState(false);
   
-  const { data: athletes } = useAthletes();
+  const { data: athletes } = useCompetitionAthletes(competitionId);
   const { data: events } = useEvents();
   const createRoutine = useCreateRoutine();
 
